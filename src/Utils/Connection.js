@@ -2,7 +2,7 @@
 
 const Connection = class {
 
-    localStream = null
+    localStream = null //screen recording - only video no audio single track object from local peer
     remoteStream = null
 
     localSdp = ""
@@ -27,11 +27,14 @@ const Connection = class {
     }
 
 
-    processAnswer(answerData, localSdpData, localStream){
+    async processAnswer(answerData, localSdpData, localStream){
+        this.localStream = localStream.getTracks()[0]
 
-        this.peerConnection.setLocalDescription(localSdpData.localSdp)
+        this.peerConnection.addTrack(this.localStream)
+        await this.peerConnection.setLocalDescription(localSdpData.localSdp)
         
-        this.peerConnection.setRemoteDescription(answerData.answerSdp)
+        await this.peerConnection.setRemoteDescription(answerData.answerSdp)
+        this.listenForRemoteStream()
         
         for(let remoteCandidate of answerData.answerIce){
             this.peerConnection.addIceCandidate(remoteCandidate)
@@ -39,14 +42,18 @@ const Connection = class {
     }
 
 
+    //localstream == MediaStream
     async createAnswer(offerData, localStream){
+        this.localStream = localStream.getTracks()[0]
         
         //set remote description
-        this.peerConnection.setRemoteDescription(offerData.offerSdp)
+        await this.peerConnection.setRemoteDescription(offerData.offerSdp)
         for(let remoteCandidate of offerData.offerIce){
             this.peerConnection.addIceCandidate(remoteCandidate)
         }
+        this.listenForRemoteStream()
 
+        this.peerConnection.addTrack(this.localStream) //add local stream to the peer connection
         //create answer based on remote description set above
         this.localSdp = await this.peerConnection.createAnswer()
         this.peerConnection.setLocalDescription(this.localSdp)
@@ -73,13 +80,27 @@ const Connection = class {
             }
         })
     }
+
+    listenForRemoteStream(){
+        this.peerConnection.ontrack = (e) => {
+            this.remoteStream = e.streams[0]
+        }
+    }
+
+    getRemoteStream(){
+        return new Promise((resolve, reject) => {
+            if(this.remoteStream){
+                resolve(this.remoteStream)
+            }
+        })
+    }
 }
 export default Connection;
 
 /*
-- need to handle ontrack
-- need to handle adding streams
-- need to handle networkManager passing in correct things
+- need to handle ontrack 
+- need to handle adding streams - done
+- need to handle networkManager passing in correct things - in progress
 
 dont use AI this has been iffy at best with AI its kinda done like a lot of nudging along
 */
