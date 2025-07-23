@@ -5,11 +5,10 @@ const Connection = class {
     localStream = null //screen recording - only video no audio single track object from local peer
     remoteStream = null
 
-    localSdp = ""
+    localSdp = {}
     localIce = []
 
     peerId = ""
-    dataChannel = null
 
 
     peerConnection = new RTCPeerConnection(
@@ -22,33 +21,40 @@ const Connection = class {
         }
     )
 
-    constructor(peerId){
+    constructor(peerId, localSdpData){
         this.peerId = peerId
+        this.localSdp = localSdpData
     }
 
 
-    async processAnswer(answerData, localSdpData, localStream){
+    async processAnswer(answerData, localStream){
         this.localStream = localStream.getTracks()[0]
 
         this.peerConnection.addTrack(this.localStream)
-        await this.peerConnection.setLocalDescription(localSdpData.localSdp)
+        await this.peerConnection.setLocalDescription(this.localSdp)
         
-        await this.peerConnection.setRemoteDescription(answerData.answerSdp)
+        await this.peerConnection.setRemoteDescription({
+            type: "answer",
+            sdp: answerData.sdp
+        })
         this.listenForRemoteStream()
         
-        for(let remoteCandidate of answerData.answerIce){
+        for(let remoteCandidate of answerData.ice_candidates){
             this.peerConnection.addIceCandidate(remoteCandidate)
         }
     }
 
 
     //localstream == MediaStream
-    async createAnswer(offerData, localStream){
+    async createAnswer(offerData, localStream, fromUserId){
         this.localStream = localStream.getTracks()[0]
         
         //set remote description
-        await this.peerConnection.setRemoteDescription(offerData.offerSdp)
-        for(let remoteCandidate of offerData.offerIce){
+        await this.peerConnection.setRemoteDescription({
+            type: "offer",
+            sdp: offerData.sdp
+        })
+        for(let remoteCandidate of offerData.ice_candidates){
             this.peerConnection.addIceCandidate(remoteCandidate)
         }
         this.listenForRemoteStream()
@@ -61,8 +67,13 @@ const Connection = class {
         
         // returns Ice Candidates in bulk and the local SDP created for the remote description
         return {
-            answerSdp: this.peerConnection.localDescription,
-            answerIce: this.localIce
+            from_user_id: fromUserId,
+            to_user_id: this.peerId,
+            answer: {
+                type: "answer",
+                sdp: this.peerConnection.localDescription.sdp,
+                ice_candidates: this.localIce
+            }
         }
     }
 
@@ -89,10 +100,32 @@ const Connection = class {
 
     getRemoteStream(){
         return new Promise((resolve, reject) => {
-            if(this.remoteStream){
-                resolve(this.remoteStream)
-            }
+            const timeout = setTimeout(() => {
+                clearInterval(interval)
+                if(!this.remoteStream){
+                    reject(new Error("Remote stream not available in time."))
+                } else {
+                    resolve(this.remoteStream)
+                }
+            }, 60000) // minute time out
+
+            const interval = setInterval(() => {
+                if(this.remoteStream){
+                    clearInterval(interval)
+                    clearTimeout(timeout)
+                    resolve(this.remoteStream)
+                }
+            }, 100) // check every 100ms
         })
+    }
+
+    closeConnection(){ //double check this logic with the connection manager
+        if(this.peerConnection){
+            this.peerConnection.close()
+            this.peerConnection = null
+        }
+        this.localStream = null
+        this.remoteStream = null
     }
 }
 export default Connection;
@@ -101,6 +134,4 @@ export default Connection;
 - need to handle ontrack 
 - need to handle adding streams - done
 - need to handle networkManager passing in correct things - in progress
-
-dont use AI this has been iffy at best with AI its kinda done like a lot of nudging along
 */
