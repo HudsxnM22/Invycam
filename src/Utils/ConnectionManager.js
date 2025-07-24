@@ -1,7 +1,7 @@
 import axios from "axios"
 import Connection from "./Connection"
 
-const signalingServerUrl = "http://localhost:8000/api/"
+const signalingServerUrl = "http://localhost:8000/"
 
 /*
 read the README.md for more information on how to use this class.
@@ -22,7 +22,8 @@ const ConnectionManager = class {
     userId = ""
     localStream = null
     role = "guest" // or "host", depending on the role in the room
-    peerConnections = []
+    peerConnections = {}
+    roomKey = "" 
     //maybe some window management for the various peers. later
 
     constructor(coordsToRecord){
@@ -46,7 +47,7 @@ const ConnectionManager = class {
         // TODO: implement this function to get the user's media stream
     }
 
-    async createRoom(roomName){
+    async createRoom(roomName, userName){
         await this.waitForLocalSdpOfferWithBulkIceCandidates()
 
         if(!roomName || roomName === ""){
@@ -59,7 +60,8 @@ const ConnectionManager = class {
             try {
                 const response = await this.signallingServerCall("createRoom", 
                     {
-                        name: roomName
+                        name: roomName,
+                        username: userName
                     }
                 )
 
@@ -70,6 +72,7 @@ const ConnectionManager = class {
                 }
                 this.roomId = response.data.room_id
                 this.userId = response.data.user_id
+                this.roomKey = response.data.room_key //only host has access to this key
 
                 //NotificationSystem.notify(response.data.message, "success") <- this isnt implemented yet
                 this.roomStatus = "connected"
@@ -82,7 +85,7 @@ const ConnectionManager = class {
         }
     }
 
-    async joinRoom(roomId){
+    async joinRoom(roomId, userName){
         await this.waitForLocalSdpOfferWithBulkIceCandidates()
 
         if(!roomId || roomId === ""){
@@ -96,6 +99,7 @@ const ConnectionManager = class {
                 const response = await this.signallingServerCall("joinRoom", 
                 {
                     room_id: roomId,
+                    username: userName
                 })
 
                 if(response.data.error){
@@ -139,10 +143,12 @@ const ConnectionManager = class {
                 this.roomStatus = "disconnected"
                 this.roomId = ""
                 this.userId = ""
+                this.roomKey = ""
 
-                if(this.peerConnections.length > 0){
-                    this.peerConnections.forEach(pc => pc.closeConnection())
-                    this.peerConnections = []
+                // close all peer connections
+                for(let peerId in this.peerConnections){
+                    this.peerConnections[peerId].closeConnection()
+                    delete this.peerConnections[peerId]
                 }
             }
             catch (error) {
@@ -151,6 +157,30 @@ const ConnectionManager = class {
         }
     }
 
+    async getServerRoomUsers(){
+        if(this.roomStatus === "connected"){
+            try {
+                const response = await this.signallingServerCall("getRoomUsers", {})
+
+                if(response.data.error){
+                    //NotificationSystem.notify(response.data.error, "error") // <- this isnt implemented yet
+                    return
+                }
+
+                return response.data.users // returns an array of users in the room
+            }
+            catch (error) {
+                console.error("Error calling signalling server: ", error)
+            }
+        }
+        else {
+            //NotificationSystem.notify("You are not connected to a room", "error") // <- this isnt implemented yet
+            return []
+        }
+    }
+
+
+    // sends offer to all users in the room
     async sendOffer(){
         await this.waitForLocalSdpOfferWithBulkIceCandidates()
         
@@ -176,71 +206,84 @@ const ConnectionManager = class {
 
     
 
-    // Listeners - these are hung requests for the signalling server to send us offers, answers, and events
-
-    // will listen for offers from the signalling server and create a peer connection for each offer received.
-    async listenForOffers(){
-        try {
-            const response = await this.signallingServerCall("listenForOffers", {})
-            if(response.data.error){
-                //NotificationSystem.notify(response.data.error, "error") // <- this isnt implemented yet
-                return
-            }
-            
-            const fromUserId = response.data.offer.from_user_id
-            const offerData = response.data.offer.offer
-
-            const localSdpData = { // for parsing in the Connection class
-                type: "offer",
-                sdp: this.localSdpOfferWithBulkIceCandidates.offer.sdp
-            }
-
-            const newPeerConnection = new Connection(fromUserId, localSdpData)
-            this.peerConnections.push(newPeerConnection)
-            const answer = await newPeerConnection.createAnswer(offerData, this.localStream, this.userId)
-            
-            const answerResponse = await this.signallingServerCall("sendAnswer", answer)
-            if(answerResponse.data.error){
-                //NotificationSystem.notify(answerResponse.data.error, "error") // <- this isnt implemented yet
-                return 
-            }
-        //NotificationSystem.notify(answerResponse.data.message, "success") // <- this isnt implemented yet
-        } catch (error) {
-            console.error("Error calling signalling server: ", error) //TODO: error notification
+    // web socket listeners for offers, answers, and events
+    async startWebSocketConnectionMonitoring(){
+        if(this.roomStatus != "connected"){
             return
         }
 
-        this.listenForOffers()
-    }
-
-    async listenForAnswers(){
         try {
-            // This will hang until an answer is received from the signalling server
-            const response = await this.signallingServerCall("listenForAnswers", {})
-            if(response.data.error){
-                //NotificationSystem.notify(response.data.error, "error") // <- this isnt implemented yet
-                return
+            const url = "ws://localhost:8000/ws/socket/" + this.userId
+            const socket = new WebSocket(url)
+            socket.onopen = () => {
+                console.log("WebSocket connection established")
             }
+            socket.onmessage = async (event) => {
+                const data = JSON.parse(event.data)
 
-            const localSdpData = { // for parsing in the Connection class
-                type: "offer",
-                sdp: this.localSdpOfferWithBulkIceCandidates.offer.sdp
+                if(data.error){
+                    //NotificationSystem.notify(data.error, "error") // <- this isnt implemented yet
+                    return
+                }
+
+                let connection = null
+
+                switch(data.type) {
+                    case "offer":
+                        const offerData = data.payload
+                        connection = new Connection(offerData.from_user_id, {
+                            type: "offer",
+                            sdp: this.localSdpOfferWithBulkIceCandidates.offer.sdp // send without ice candidates
+                        })
+
+                        this.peerConnections[offerData.user_id] = connection
+                        const answer = await connection.createAnswer(offerData.offer, this.localStream, this.userId)
+                        console.log(answer) //TODO remove this log
+                        this.signallingServerCall("sendAnswer", answer)
+                        break
+
+                    case "answer":
+                        const answerData = data.payload
+                        connection = new Connection(answerData.from_user_id, {
+                            type: "offer",
+                            sdp: this.localSdpOfferWithBulkIceCandidates.offer.sdp // send without ice candidates
+                        })
+                        this.peerConnections[answerData.from_user_id] = connection
+                        await connection.processAnswer(answerData.answer, this.localStream)
+                        break
+
+                    case "disconnect":
+                        const disconnectData = data.payload
+                        if(this.peerConnections[disconnectData.user_id]){
+                            this.peerConnections[disconnectData.user_id].closeConnection()
+                            delete this.peerConnections[disconnectData.user_id]
+                        }
+                        else {
+                            console.warn("No peer connection found for user_id: ", disconnectData.user_id)
+                        }
+                        break
+                    case "host_reallocation":
+                        const reallocationData = data.payload
+                        //NotificationSystem.notify(`Host has been reallocated to ${reallocationData.message}`, "info") // <- this isnt implemented yet
+                        if(this.userId === reallocationData.new_host_id){
+                            this.role = "host"
+                        }
+                        this.roomKey = reallocationData.room_key //only host has access to this key. for kicking users and other host actions
+                        break
+                }
             }
-
-            const fromUserId = response.data.answer.from_user_id
-            const answerData = response.data.answer.answer
-            const newPeerConnection = new Connection(fromUserId, localSdpData)
-            this.peerConnections.push(newPeerConnection)
-            await newPeerConnection.processAnswer(answerData, this.localStream)
-        } catch (error) {
-            console.error("Error calling signalling server: ", error) //TODO: error notification
-            return
+            socket.onclose = () => {
+                // more logging and error handling
+                console.log("WebSocket connection closed")
+            }
         }
-
-        this.listenForAnswers()
+        catch (error) {
+            console.error("Error establishing WebSocket connection: ", error)
+        }
     }
 
-    //Utils ----
+
+    //Utils ----========================================================================------------------=====================------------------==========
 
     waitForLocalSdpOfferWithBulkIceCandidates(){
         return new Promise((resolve, reject) => {
@@ -304,16 +347,22 @@ const ConnectionManager = class {
     }
 
     async gatherIceCandidates(temporaryRTC){
-        return new Promise((resolve) => {
-            temporaryRTC.onicecandidate = (event) => {
-                if(event.candidate){
-                    this.localSdpOfferWithBulkIceCandidates.offer.ice_candidates.push(event.candidate)
-                } else {
-                    //no more candidates
-                    temporaryRTC.onicecandidate = null
-                    this.sdpInitialized = true // set the flag to true when all candidates are gathered
-                    resolve()
+        return new Promise((resolve, reject) => {
+            try {
+                temporaryRTC.onicecandidate = (event) => {
+                    if(event.candidate){
+                        this.localSdpOfferWithBulkIceCandidates.offer.ice_candidates.push(event.candidate)
+                    } else {
+                        //no more candidates
+                        temporaryRTC.onicecandidate = null
+                        this.sdpInitialized = true // set the flag to true when all candidates are gathered
+                        resolve()
+                    }
                 }
+            } catch (error) {
+                //NotificationSystem.notify("Critical failure please restart app.", "error") // <- this isnt implemented yet
+                console.error("Error gathering ICE candidates: ", error)
+                reject()
             }
         })
     }
@@ -322,21 +371,17 @@ const ConnectionManager = class {
     signallingServerCall(type, payload){
         switch(type) {
             case "createRoom":
-                return axios.post(signalingServerUrl + "create-room", payload)
+                return axios.post(signalingServerUrl + "api/create-room", payload)
             case "joinRoom":
-                return axios.post(signalingServerUrl + "join-room", payload)
+                return axios.post(signalingServerUrl + "api/join-room", payload)
             case "leaveRoom":
-                return axios.post(signalingServerUrl + "leave-room", payload)
+                return axios.post(signalingServerUrl + "api/leave-room", payload)
             case "sendOffer":
-                return axios.post(signalingServerUrl + "offer", payload)
+                return axios.post(signalingServerUrl + "api/offer", payload)
             case "sendAnswer":
-                return axios.post(signalingServerUrl + "answer", payload)
-
-            case "listenForOffers":
-                return axios.get(signalingServerUrl + "wait-for-offer/" + this.userId)
-            case "listenForAnswers":
-                return axios.get(signalingServerUrl + "wait-for-answer/" + this.userId)
-            
+                return axios.post(signalingServerUrl + "api/answer", payload)
+            case "getRoomUsers":
+                return axios.get(signalingServerUrl + "api/get-room-users/" + this.roomId + "/" + this.userId)
             default:
                 throw new Error("Unknown signalling server call type: " + type) //TODO: error notification
         }

@@ -80,14 +80,19 @@ const Connection = class {
     gatherIceCandidates(){
         return new Promise((resolve, reject) => {
             const candidates = []
-
-            this.peerConnection.onicecandidate = (e) => {
-                if(e.candidate){
-                    candidates.push(e.candidate)
+            try {
+                this.peerConnection.onicecandidate = (e) => {
+                    if(e.candidate){
+                        candidates.push(e.candidate)
+                    }
+                    else{
+                        resolve(candidates)
+                    }
                 }
-                else{
-                    resolve(candidates)
-                }
+            } catch (error) {
+                console.error("Error gathering ICE candidates: ", error)
+                //NotificationSystem.notify("Critical failure please restart app.", "error")
+                reject(error)
             }
         })
     }
