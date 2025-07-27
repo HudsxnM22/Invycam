@@ -10,13 +10,6 @@ and why this class is built the way it is.
 
 const ConnectionManager = class {
 
-    localSdpOfferWithBulkIceCandidates = {
-        user_id: "",
-        offer: {
-            ice_candidates: []
-        }
-    }
-    sdpInitialized = false // flag variable this is used to check if the local SDP has been initialized with bulk ICE candidates
     roomId = ""
     roomStatus = "disconnected"
     userId = ""
@@ -31,24 +24,16 @@ const ConnectionManager = class {
 
         this.startLocalStream(coordsToRecord).then((localStream) => { //TODO: create this function. crop the stream and cap the resolution and FPS. will return a MediaStream
             this.localStream = localStream
-            this.createLocalSdpOfferWithBulkIceCandidates(localStream)
-
-            //start answer, offer, and event listener
-            this.listenForOffers()
-            this.listenForAnswers()
-            //this.listenForEvents() <- this is not implemented yet
         }).catch((error) => {
             console.error("Error starting local stream:", error) //TODO: error notification
         })
     }
 
     async startLocalStream(coordsToRecord){
-        // This function should return a MediaStream object with the local video/audio stream
-        // TODO: implement this function to get the user's media stream
+        
     }
 
     async createRoom(roomName, userName){
-        await this.waitForLocalSdpOfferWithBulkIceCandidates()
 
         if(!roomName || roomName === ""){
             //NotificationSystem.notify("Please provide a valid room name", "error")
@@ -77,7 +62,7 @@ const ConnectionManager = class {
                 //NotificationSystem.notify(response.data.message, "success") <- this isnt implemented yet
                 this.roomStatus = "connected"
                 this.role = "host"
-                this.localSdpOfferWithBulkIceCandidates.user_id = this.userId
+                this.startWebSocketConnectionMonitoring()
             }
             catch (error) {
                 console.error("Error calling signalling server: ", error)
@@ -86,7 +71,6 @@ const ConnectionManager = class {
     }
 
     async joinRoom(roomId, userName){
-        await this.waitForLocalSdpOfferWithBulkIceCandidates()
 
         if(!roomId || roomId === ""){
             //NotificationSystem.notify("Please provide a valid room ID", "error") // <- this isnt implemented yet
@@ -108,13 +92,15 @@ const ConnectionManager = class {
                     return
                 }
 
+            
                 this.roomId = response.data.room_id
                 this.userId = response.data.user_id
 
                 //NotificationSystem.notify(response.data.message, "success")
                 this.roomStatus = "connected"
                 this.role = "guest"
-                this.localSdpOfferWithBulkIceCandidates.user_id = this.userId
+
+                this.startWebSocketConnectionMonitoring()
 
                 //---------------------------------
                 this.sendOffer() // send the local SDP offer with bulk ICE candidates to the signalling server which will then distribute it to the other users in the room.
@@ -131,7 +117,10 @@ const ConnectionManager = class {
         if(this.roomStatus === "connected"){
             this.roomStatus = "leaving"
             try {
-                const response = await this.signallingServerCall("leaveRoom", this.userId)
+                const response = await this.signallingServerCall("leaveRoom", {
+                    room_id: this.roomId,
+                    user_id: this.userId
+                })
 
                 if(response.data.error){
                     //NotificationSystem.notify(response.data.error, "error") <- this isnt implemented yet
@@ -182,29 +171,62 @@ const ConnectionManager = class {
 
     // sends offer to all users in the room
     async sendOffer(){
-        await this.waitForLocalSdpOfferWithBulkIceCandidates()
-        
-
         if(this.roomStatus === "connected"){
+            const usersInRoom = await this.getServerRoomUsers() // array of users in the room
+
+            if(!usersInRoom){
+                //NotificationSystem here
+                return
+            }
             try {
-                
-                const response = await this.signallingServerCall("sendOffer", this.localSdpOfferWithBulkIceCandidates)
+                for(let user of usersInRoom) {
+                    if(user.user_id === this.userId){
+                        continue
+                    }
 
-                if(response.data.error){
-                    //NotificationSystem.notify(response.data.error, "error")
-                    return
+                    const targetUserId = user.user_id
+
+                    const connection = new Connection(targetUserId)
+                    this.peerConnections[targetUserId] = connection
+
+                    const fromUserId = this.userId
+                    const toUserId = targetUserId
+                    
+                    const offerToSend = await connection.createOffer(this.localStream, fromUserId, toUserId)
+                    offerToSend.room_id = this.roomId //add room id for some very basic security
+
+                    const response = await this.signallingServerCall("sendOffer", offerToSend)
+
+                    console.log(this.peerConnections)
+
+                    if(response.data.error){
+                        //NotificationSystem.notify(response.data.error, "error")
+                    }
                 }
-                
-                //NotificationSystem.notify(response.data.message, "success")
-
             }
-            catch (error) {
-                console.error("Error calling signalling server: ", error)
-            }
+            catch (error){
+                //NotificationSystem.notify("Connection error", "error")
+                console.error("sendOffer error: " + error)
+            }     
         }
     }
 
-    
+    getRemoteStreams() {
+        let remoteStreams = []
+        
+        for(let peerId in this.peerConnections){
+            const connection = this.peerConnections[peerId]
+            
+            // Return immediately available streams only
+            if (connection.remoteStream) {
+                remoteStreams.push(connection.remoteStream)
+            } else {
+                console.log(`Remote stream not yet available for peer ${peerId}`)
+            }
+        }
+        
+        return Promise.resolve(remoteStreams)
+    }
 
     // web socket listeners for offers, answers, and events
     async startWebSocketConnectionMonitoring(){
@@ -228,35 +250,45 @@ const ConnectionManager = class {
 
                 let connection = null
 
+                console.log(data)
+
                 switch(data.type) {
                     case "offer":
                         const offerData = data.payload
-                        connection = new Connection(offerData.from_user_id, {
-                            type: "offer",
-                            sdp: this.localSdpOfferWithBulkIceCandidates.offer.sdp // send without ice candidates
-                        })
+                        connection = new Connection(offerData.from_user_id)
+                        this.peerConnections[offerData.from_user_id] = connection
 
-                        this.peerConnections[offerData.user_id] = connection
-                        const answer = await connection.createAnswer(offerData.offer, this.localStream, this.userId)
+                        const answer = await connection.createAnswer(offerData.offer, this.localStream, this.userId, offerData.from_user_id)
+                        console.log(connection)
                         console.log(answer) //TODO remove this log
                         this.signallingServerCall("sendAnswer", answer)
                         break
 
                     case "answer":
                         const answerData = data.payload
-                        connection = new Connection(answerData.from_user_id, {
-                            type: "offer",
-                            sdp: this.localSdpOfferWithBulkIceCandidates.offer.sdp // send without ice candidates
-                        })
-                        this.peerConnections[answerData.from_user_id] = connection
-                        await connection.processAnswer(answerData.answer, this.localStream)
+
+                        if(!this.peerConnections[answerData.from_user_id]){
+                            console.error("Peer answer failure")
+                            //NotificationSystem.notify(`Connection to another user failed.`, "info") // <- this isnt implemented yet
+                            break
+                        }
+
+                        try{
+                            const connection = this.peerConnections[answerData.from_user_id]
+                            await connection.processAnswer(answerData.answer)
+                        }
+                        catch (error){
+                            console.error("answer websocket error: " + error)
+                        }
                         break
 
                     case "disconnect":
                         const disconnectData = data.payload
                         if(this.peerConnections[disconnectData.user_id]){
+                            console.log(this.peerConnections)
                             this.peerConnections[disconnectData.user_id].closeConnection()
                             delete this.peerConnections[disconnectData.user_id]
+                            console.log(this.peerConnections)
                         }
                         else {
                             console.warn("No peer connection found for user_id: ", disconnectData.user_id)
@@ -284,27 +316,6 @@ const ConnectionManager = class {
 
 
     //Utils ----========================================================================------------------=====================------------------==========
-
-    waitForLocalSdpOfferWithBulkIceCandidates(){
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                clearInterval(interval)
-                if(!this.sdpInitialized){
-                    reject(new Error("Local SDP offer with bulk ICE candidates not initialized in time."))
-                } else {
-                    resolve()
-                }
-            }, 30000) // 30 seconds timeout
-
-            const interval = setInterval(() => {
-                if(this.sdpInitialized){
-                    clearInterval(interval)
-                    clearTimeout(timeout)
-                    resolve()
-                }
-            }, 50) // check every 100ms
-        })
-    }
     
     getUserId(){
         return this.userId
@@ -318,54 +329,6 @@ const ConnectionManager = class {
         return this.roomStatus
     }
 
-    async createLocalSdpOfferWithBulkIceCandidates(localStream){
-
-        const temporaryRTC = new RTCPeerConnection(
-            {
-                iceServers: [
-                    { urls: "stun:stun.l.google.com:19302" },
-                    { urls: "stun:stun.l.google.com:5349" },
-                    { urls: "stun:stun1.l.google.com:3478" },
-                ]
-            })
-
-        try{
-            
-            temporaryRTC.addTrack(localStream.getTracks()[0])
-            const offer = await temporaryRTC.createOffer()
-
-            this.localSdpOfferWithBulkIceCandidates.offer.type = offer.type
-            this.localSdpOfferWithBulkIceCandidates.offer.sdp = offer.sdp
-            await temporaryRTC.setLocalDescription(offer)
-            await this.gatherIceCandidates(temporaryRTC)
-
-            temporaryRTC.close() // close the temporary RTC connection after gathering ICE candidates. we only need the SDP and ICE candidates for peer connections. handled by the Connection class.
-        }catch(error){
-            console.error("Error creating local SDP offer with bulk ICE candidates: ", error)
-            temporaryRTC.close()
-        }
-    }
-
-    async gatherIceCandidates(temporaryRTC){
-        return new Promise((resolve, reject) => {
-            try {
-                temporaryRTC.onicecandidate = (event) => {
-                    if(event.candidate){
-                        this.localSdpOfferWithBulkIceCandidates.offer.ice_candidates.push(event.candidate)
-                    } else {
-                        //no more candidates
-                        temporaryRTC.onicecandidate = null
-                        this.sdpInitialized = true // set the flag to true when all candidates are gathered
-                        resolve()
-                    }
-                }
-            } catch (error) {
-                //NotificationSystem.notify("Critical failure please restart app.", "error") // <- this isnt implemented yet
-                console.error("Error gathering ICE candidates: ", error)
-                reject()
-            }
-        })
-    }
 
     // This function is used to make calls to the signalling server more readable and maintainable.
     signallingServerCall(type, payload){
@@ -386,17 +349,7 @@ const ConnectionManager = class {
                 throw new Error("Unknown signalling server call type: " + type) //TODO: error notification
         }
     }
-} // <-- Add this closing brace for the class
-
-/*
-User gets given id upon joining a room, or creating a room - see signalling server API for more details.
-
-Offer object structure for signalling server for development purposes only.:
-
-{
-  "user_id": "user_xyz",
-  "offer": {
-    
-  }
 }
-*/
+
+export default ConnectionManager
+

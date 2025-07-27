@@ -14,40 +14,65 @@ const Connection = class {
     peerConnection = new RTCPeerConnection(
         {
             iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun.l.google.com:5349" },
-                { urls: "stun:stun1.l.google.com:3478" },
+                { urls: "stun:stun.l.google.com:19302" }
             ]
         }
     )
 
-    constructor(peerId, localSdpData){
+    constructor(peerId){
         this.peerId = peerId
-        this.localSdp = localSdpData
+        this.peerConnection.addEventListener('track', async (event) => {
+            this.remoteStream = event.streams[0]
+        })
     }
 
 
-    async processAnswer(answerData, localStream){
+    async createOffer(localStream, fromUserId, toUserId){
+
         this.localStream = localStream.getTracks()[0]
 
-        this.peerConnection.addTrack(this.localStream)
+        this.peerConnection.addTrack(this.localStream, localStream)
+
+        this.localSdp = await this.peerConnection.createOffer()
         await this.peerConnection.setLocalDescription(this.localSdp)
+
+        this.localIce = await this.gatherIceCandidates()
+
+        console.log(this.peerId + " " + this.peerConnection.signalingState) 
+
+        return {
+            from_user_id: fromUserId,
+            to_user_id: toUserId,
+            offer: {
+                type: "offer",
+                sdp: this.localSdp.sdp,
+                ice_candidates: this.localIce
+            }
+        }
+    }
+
+    async processAnswer(answerData){
+        console.log("processes answer")
         
         await this.peerConnection.setRemoteDescription({
             type: "answer",
             sdp: answerData.sdp
         })
-        this.listenForRemoteStream()
-        
+
         for(let remoteCandidate of answerData.ice_candidates){
             this.peerConnection.addIceCandidate(remoteCandidate)
-        }
+        }   
+
+        console.log(this.peerId + " " + this.peerConnection.signalingState)
     }
 
 
     //localstream == MediaStream
-    async createAnswer(offerData, localStream, fromUserId){
+    async createAnswer(offerData, localStream, fromUserId, targetId){
+
         this.localStream = localStream.getTracks()[0]
+
+        this.peerConnection.addTrack(this.localStream, localStream) //add local stream to the peer connection
         
         //set remote description
         await this.peerConnection.setRemoteDescription({
@@ -57,50 +82,48 @@ const Connection = class {
         for(let remoteCandidate of offerData.ice_candidates){
             this.peerConnection.addIceCandidate(remoteCandidate)
         }
-        this.listenForRemoteStream()
-
-        this.peerConnection.addTrack(this.localStream) //add local stream to the peer connection
+        
         //create answer based on remote description set above
         this.localSdp = await this.peerConnection.createAnswer()
         this.peerConnection.setLocalDescription(this.localSdp)
         this.localIce = await this.gatherIceCandidates()
+
+        console.log(this.peerId + " " + this.peerConnection.signalingState)
         
         // returns Ice Candidates in bulk and the local SDP created for the remote description
         return {
             from_user_id: fromUserId,
-            to_user_id: this.peerId,
+            to_user_id: targetId,
             answer: {
                 type: "answer",
-                sdp: this.peerConnection.localDescription.sdp,
+                sdp:  this.peerConnection.localDescription.sdp,
                 ice_candidates: this.localIce
             }
         }
     }
 
     gatherIceCandidates(){
+
+        console.log("gather ice called")
         return new Promise((resolve, reject) => {
             const candidates = []
             try {
                 this.peerConnection.onicecandidate = (e) => {
                     if(e.candidate){
+                        console.log("ice candidate found")
                         candidates.push(e.candidate)
                     }
                     else{
                         resolve(candidates)
                     }
                 }
+
             } catch (error) {
                 console.error("Error gathering ICE candidates: ", error)
                 //NotificationSystem.notify("Critical failure please restart app.", "error")
                 reject(error)
             }
         })
-    }
-
-    listenForRemoteStream(){
-        this.peerConnection.ontrack = (e) => {
-            this.remoteStream = e.streams[0]
-        }
     }
 
     getRemoteStream(){
@@ -110,6 +133,7 @@ const Connection = class {
                 if(!this.remoteStream){
                     reject(new Error("Remote stream not available in time."))
                 } else {
+                    console.log("remote stream found webRTC connection established.")
                     resolve(this.remoteStream)
                 }
             }, 60000) // minute time out
@@ -125,12 +149,14 @@ const Connection = class {
     }
 
     closeConnection(){ //double check this logic with the connection manager
+        console.log("attempting to close connection with: " + this.peerId)
         if(this.peerConnection){
             this.peerConnection.close()
             this.peerConnection = null
         }
         this.localStream = null
         this.remoteStream = null
+        console.log("closed conneciton with: " + this.peerId)
     }
 }
 export default Connection;
