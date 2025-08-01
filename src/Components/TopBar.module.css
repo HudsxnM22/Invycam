@@ -1,0 +1,99 @@
+.topbarContainer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 33vw;
+    height: 4vh;
+    background: linear-gradient(135deg, var(--background-color), rgba(60, 68, 81, 0.8));
+    backdrop-filter: blur(1vh);
+    border-radius: 10px 10px 0 0;
+    padding: 0 1vw;
+    gap: 0.5vw;
+    border-bottom: 0.1vh solid var(--primary-color);
+
+    font-family: var(--font-family);
+}
+
+.topbarButtonContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5vh;
+    height: 2.5vh;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+
+}
+
+.topbarButtonContainer:hover {
+    background: rgba(232, 157, 72, 0.2);
+    transform: scale(1.1);
+}
+
+.topbarButtonContainer:active {
+    transform: scale(0.95);
+    background: var(--primary-color);
+}
+
+/* Bug report button - typically positioned on the left or first */
+.topbarButtonContainer[name="bug-report"]:hover {
+    background: rgba(232, 157, 72, 0.3);
+}
+
+/* Minimize button styling */
+.topbarButtonContainer[name="minimize"]:hover {
+    background: rgba(233, 226, 15, 0.3);
+}
+
+/* Exit button styling */
+.topbarButtonContainer[name="exit"]:hover {
+    background: rgba(231, 76, 60, 0.3);
+}
+
+/* Icon styling */
+.bugIcon,
+.minimizeIcon,
+.closeIcon {
+    width: 1.5vh;
+    height: 1.5vh;
+    stroke: var(--text-color);
+    fill: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.topbarButtonContainer:hover .bugIcon,
+.topbarButtonContainer:hover .minimizeIcon,
+.topbarButtonContainer:hover .closeIcon {
+    stroke: var(--text-color);
+    fill: var(--text-color);
+}
+
+/* Specific icon colors on hover */
+.topbarButtonContainer[name="bug-report"]:hover .bugIcon {
+    stroke: var(--primary-color);
+    fill: var(--primary-color);
+}
+
+.topbarButtonContainer[name="minimize"]:hover .minimizeIcon {
+    stroke: var(--secondary-color);
+    fill: none;
+}
+
+.topbarButtonContainer[name="exit"]:hover .closeIcon {
+    stroke: #e74c3c;
+    fill: none;
+}
+
+/* Focus states for accessibility */
+.topbarButtonContainer:focus {
+    outline: 0.2vh solid var(--primary-color);
+    outline-offset: 0.1vh;
+}
+
+.topbarButtonContainer:focus:not(:focus-visible) {
+    outline: none;
+}

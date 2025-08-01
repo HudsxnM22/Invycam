@@ -19,17 +19,21 @@ const ConnectionManager = class {
     roomKey = "" 
     //maybe some window management for the various peers. later
 
-    constructor(coordsToRecord){
+    constructor(elementToCroptTo){
         // Init the connection manager with the local SDP with bulk ice candidates
 
-        this.startLocalStream(coordsToRecord).then((localStream) => { //TODO: create this function. crop the stream and cap the resolution and FPS. will return a MediaStream
+        this.startLocalStream(elementToCroptTo).then((localStream) => { //TODO: create this function. crop the stream and cap the resolution and FPS. will return a MediaStream
             this.localStream = localStream
         }).catch((error) => {
             console.error("Error starting local stream:", error) //TODO: error notification
         })
     }
 
-    async startLocalStream(coordsToRecord){
+    async startLocalStream(elementToCroptTo){
+        
+    }
+
+    async changeLocalStream(elementToCroptTo){
         
     }
 

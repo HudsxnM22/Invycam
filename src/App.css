@@ -1,21 +1,25 @@
-.App {
-    text-align: center;
-  }
+:root {
+  --primary-color: #e89d48;
+  --secondary-color: #e9e20f;
+  --background-color: #3c4451;
+  --text-color: #ffffff;
+  --secondary-text-color: #000000;
+  --font-family: 'Google Sans Code', sans-serif;
+  --edit-background-color: rgba(62, 62, 62, 0.1);
+
+  background-color: var(--edit-background-color) ;
+}
+
+body {
+
+  width: 100vw;
+  height: 100vh;
+  padding: 0px;
+  margin: 0px;
+
+  display: flex;
+  justify-content: center;
   
-  .App-header {
-    background-color: #282c34;
-    padding: 20px;
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  button {
-    padding: 10px 20px;
-    margin-top: 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+  font-family: var(--font-family);
+}
+
