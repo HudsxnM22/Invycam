@@ -6,12 +6,14 @@ const useClientStore = create((set) => ({
     role: "guest", // possible values: "guest", "host"
     username: "",
     startedStream: false,
+    localStream: null,
 
     setRoomStatus: (roomStatus) => set({ roomStatus }),
     setRole: (role) => set({ role }),
     setUsername: (username) => set({ username }),
     setRoomId: (roomId) => set({ roomId }),
-    setStartedStream: (bool) => set({startedStream: bool})
+    setStartedStream: (bool) => set({startedStream: bool}),
+    setLocalStream: (MediaStream) => set({localStream: MediaStream})
 }))
 
 export default useClientStore

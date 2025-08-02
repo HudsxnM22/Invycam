@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, session } = require('electron');
 const path = require('path');
 
 let win;
@@ -11,10 +11,33 @@ function createWindow() {
     fullscreen: true,
     minimizable: false,
     alwaysOnTop: true,
-    resizable: false
+    resizable: false,
+    titleBarOverlay: false,
+    titleBarStyle: 'hidden',
+
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+
+      //to use the recording cropping
+      additionalArguments: [
+        '--enable-experimental-web-platform-features',
+        '--enable-features=RegionCapture',
+        '--disable-features=VizDisplayCompositor'
+      ]
+    }
   });
 
-  win.setIgnoreMouseEvents(true); //TEST
+  console.log('Chromium version:', process.versions.chrome);
+
+  //for screen recording
+  session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
+    desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
+      callback({ video: sources[0], audio: 'loopback' })
+    })
+  }, { useSystemPicker: false });
+
+  //win.setIgnoreMouseEvents(true); //TEST
+  win.webContents.openDevTools()
   // Load the React app
   const isDev = process.env.NODE_ENV === 'development';
   

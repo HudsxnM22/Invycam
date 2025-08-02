@@ -1,0 +1,114 @@
+.roomOptionsFormMenu {
+  position: relative;
+  background-color: #ffc57900;
+  border-radius: 10px;
+  padding: 2vh 2vw 5vh 2vw;
+  width: 80%;
+  height: 40%;
+  box-shadow: 0 0.2vh 0.2vw rgb(220, 220, 220);
+  transition: all 500ms;
+}
+
+.selectTabButton:first-of-type {
+  left: 0.7vw;
+}
+
+.selectTabButton:last-of-type {
+  left: 6.7vw;
+}
+
+.title {
+  font-size: 1.0vw;
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-weight: 650;
+  margin: 0 0 0.4vh 0;
+  text-align: center;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vh;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+}
+
+/* Animated input form control from UIverse */
+.formControl {
+  position: relative;
+  margin: 1vh 0 1vh;
+  width: 100%;
+}
+
+.formControl input {
+  background-color: transparent;
+  border: 0;
+  border-bottom: 0.1vw solid var(--text-color);
+  display: block;
+  width: 100%;
+  padding: 0.8vh 0;
+  font-size: 1.0vw;
+  color: var(--text-color);
+  font-family: var(--font-family);
+}
+
+.formControl input:focus,
+.formControl input:valid {
+  outline: 0;
+  border-bottom-color: var(--primary-color);
+}
+
+.formControl label {
+  position: absolute;
+  top: 0.3vh;
+  left: 0;
+  pointer-events: none;
+}
+
+.formControl label span {
+  display: inline-block;
+  font-size: 1.0vw;
+  min-width: 0.3vw;
+  color: var(--text-color);
+  font-family: var(--font-family);
+  transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.formControl input:focus + label span,
+.formControl input:valid + label span {
+  color: var(--primary-color);
+  transform: translateY(-2.0vh);
+  font-size: 0.8vw;
+}
+
+.buttonHolder{
+    display: flex;
+    justify-content: space-between;
+}
+
+.submitButton {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 0.4vw;
+  padding: 0.5vh 1.6vw;
+  font-size: 0.8vw;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: capitalize;
+  margin-top: 0.2vh;
+  box-shadow: 0 0.1vh 0.1vw var(--primary-color);
+}
+
+.submitButton:hover {
+  background-color: rgba(250, 162, 54, 0.708);
+  transform: translateY(-0.1vh);
+  box-shadow: 0 0.4vh 0.5vw rgba(251, 183, 25, 0.3);
+}

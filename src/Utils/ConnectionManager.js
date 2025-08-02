@@ -1,5 +1,8 @@
 import axios from "axios"
 import Connection from "./Connection"
+import useClientStore from "../Hooks/useClientStore"
+import usePeersStore from "../Hooks/usePeerStore"
+
 
 const signalingServerUrl = "http://localhost:8000/"
 
@@ -7,6 +10,8 @@ const signalingServerUrl = "http://localhost:8000/"
 read the README.md for more information on how to use this class.
 and why this class is built the way it is.
 */
+const state = useClientStore.getState() //update state values to change UI upon changes
+const peerState = usePeersStore.getState()
 
 const ConnectionManager = class {
 
@@ -17,24 +22,46 @@ const ConnectionManager = class {
     role = "guest" // or "host", depending on the role in the room
     peerConnections = {}
     roomKey = "" 
+    username = "Guest"
+
     //maybe some window management for the various peers. later
 
-    constructor(elementToCroptTo){
-        // Init the connection manager with the local SDP with bulk ice candidates
-
-        this.startLocalStream(elementToCroptTo).then((localStream) => { //TODO: create this function. crop the stream and cap the resolution and FPS. will return a MediaStream
-            this.localStream = localStream
-        }).catch((error) => {
-            console.error("Error starting local stream:", error) //TODO: error notification
-        })
+    constructor(){
     }
 
-    async startLocalStream(elementToCroptTo){
-        
-    }
+    async setLocalStream(screenCoordinatesToDraw){
+        try {
+            // Capture screen
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    frameRate: { ideal: 30 } 
+                },
+                
+                audio: false
+            })
 
-    async changeLocalStream(elementToCroptTo){
-        
+            //once the video is working and loaded process it then set local stream to it so the peers only recieve that cropped part.
+            preProccessedVideoElement.onloadedmetadata = () => {
+                preProccessedVideoElement.play();
+                const preProccessedVideoElement = document.createElement("video")
+                preProccessedVideoElement.srcObject = stream //entire screen
+
+                const {startX, startY, width, height} = screenCoordinatesToDraw
+
+                const canvasToCropVideoTo = document.createElement("canvas")
+                canvasToCropVideoTo.width = width
+                canvasToCropVideoTo.height = height
+
+                const ctx = canvasToCropVideoTo.getContext('2d')
+                ctx.drawImage(preProccessedVideoElement, startX, startY, width, height)
+
+                this.localStream = canvasToCropVideoTo.captureStream(15)
+                state.setStartedStream(true)
+            }      
+        }catch (error) {
+            console.error("Error setting local stream:", error)
+            throw error
+        }
     }
 
     async createRoom(roomName, userName){
@@ -46,6 +73,9 @@ const ConnectionManager = class {
 
         if(this.roomStatus === "disconnected"){
             this.roomStatus = "creating"
+            state.setRoomStatus("creating")
+            this.username = userName
+            state.setUsername(userName)
             try {
                 const response = await this.signallingServerCall("createRoom", 
                     {
@@ -57,15 +87,21 @@ const ConnectionManager = class {
                 if(response.data.error){
                     //NotificationSystem.notify(response.data.error, "error") <- this isnt implemented yet
                     this.roomStatus = "disconnected"
+                    state.setRoomStatus("disconnected")
+                    state.setUsername("")
                     return
                 }
                 this.roomId = response.data.room_id
+                state.setRoomId(this.roomId)
                 this.userId = response.data.user_id
+                
                 this.roomKey = response.data.room_key //only host has access to this key
 
                 //NotificationSystem.notify(response.data.message, "success") <- this isnt implemented yet
                 this.roomStatus = "connected"
+                state.setRoomStatus("connected")
                 this.role = "host"
+                state.setRole("host")
                 this.startWebSocketConnectionMonitoring()
             }
             catch (error) {
@@ -83,6 +119,9 @@ const ConnectionManager = class {
 
         if(this.roomStatus === "disconnected"){
             this.roomStatus = "joining"
+            state.setStatus("joining")
+            this.username = userName
+            state.setUsername(userName)
             try {
                 const response = await this.signallingServerCall("joinRoom", 
                 {
@@ -93,16 +132,21 @@ const ConnectionManager = class {
                 if(response.data.error){
                     //NotificationSystem.notify(response.data.error, "error") <- this isnt implemented yet
                     this.roomStatus = "disconnected"
+                    state.setRoomStatus("disconnected")
+                    state.setUsername("")
                     return
                 }
 
             
                 this.roomId = response.data.room_id
+                state.setRoomId(this.roomId)
                 this.userId = response.data.user_id
 
                 //NotificationSystem.notify(response.data.message, "success")
                 this.roomStatus = "connected"
+                state.setRoomStatus("connected")
                 this.role = "guest"
+                state.setRole("guest")
 
                 this.startWebSocketConnectionMonitoring()
 
@@ -120,6 +164,7 @@ const ConnectionManager = class {
     async leaveRoom(){
         if(this.roomStatus === "connected"){
             this.roomStatus = "leaving"
+            state.setStatus("leaving")
             try {
                 const response = await this.signallingServerCall("leaveRoom", {
                     room_id: this.roomId,
@@ -129,17 +174,22 @@ const ConnectionManager = class {
                 if(response.data.error){
                     //NotificationSystem.notify(response.data.error, "error") <- this isnt implemented yet
                     this.roomStatus = "connected" // stay connected if leave fails
+                    state.setStatus("connected")
                     return
                 }
 
                 //NotificationSystem.notify(response.data.message, "success") <- this isnt implemented yet
                 this.roomStatus = "disconnected"
+                state.setStatus("disconnected")
                 this.roomId = ""
+                state.setRoomId("")
                 this.userId = ""
+                state.setUsername("")
                 this.roomKey = ""
 
                 // close all peer connections
                 for(let peerId in this.peerConnections){
+                    peerState.updatePeers([])
                     this.peerConnections[peerId].closeConnection()
                     delete this.peerConnections[peerId]
                 }
@@ -333,6 +383,26 @@ const ConnectionManager = class {
         return this.roomStatus
     }
 
+    getLocalStream(){
+        return new Promise((resolve, reject) => {
+            if (this.localStream) {
+                resolve(this.localStream)
+                return
+            }
+
+            const interval = setInterval(() => {
+                if(this.localStream){
+                    resolve(this.localStream)
+                    clearTimeout(timeout)
+                }
+            }, 100)
+            const timeout = setTimeout(() => {
+                clearInterval(interval)
+                reject(new Error("Failed to fetch local stream"))
+            }, 5000)
+        })
+    }
+    
 
     // This function is used to make calls to the signalling server more readable and maintainable.
     signallingServerCall(type, payload){
@@ -355,5 +425,6 @@ const ConnectionManager = class {
     }
 }
 
-export default ConnectionManager
+const connectionManager = new ConnectionManager //module level instance. so I can avoid state police.
+export default connectionManager
 

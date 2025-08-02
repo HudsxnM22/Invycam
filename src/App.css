@@ -4,10 +4,10 @@
   --background-color: #3c4451;
   --text-color: #ffffff;
   --secondary-text-color: #000000;
-  --font-family: 'Google Sans Code', sans-serif;
-  --edit-background-color: rgba(62, 62, 62, 0.1);
+  --font-family: 'Ubuntu', sans-serif;
+  --edit-background-color: rgba(62, 62, 62, 0.6);
 
-  background-color: var(--edit-background-color) ;
+  background-color: var(--edit-background-color);
 }
 
 body {
@@ -19,7 +19,25 @@ body {
 
   display: flex;
   justify-content: center;
-  
   font-family: var(--font-family);
+}
+
+.areaToRecord {
+  width: inherit;
+  height: inherit;
+  margin: inherit;
+  padding: inherit;
+  position: absolute;
+
+  isolation: isolate;
+  transform-style: flat;
+}
+
+.pressEnterToConfirmAreaText {
+  margin-top: 43%;
+  text-align: center;
+  font-size: 3vw;
+  color: var(--primary-color);
+  opacity: 0.5;
 }
 

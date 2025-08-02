@@ -10,8 +10,8 @@ const TopBar = () => {
         changeMode("operation") //unmount the menu.
     }
 
-    const exitHandler = () => {
-        window.ipc.send("close-app")
+    const exitHandler = async () => {
+        window.ipc.closeApp()
     }
 
     return (
