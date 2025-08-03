@@ -27,8 +27,6 @@ function createWindow() {
     }
   });
 
-  console.log('Chromium version:', process.versions.chrome);
-
   //for screen recording
   session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
     desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {

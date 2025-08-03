@@ -111,7 +111,7 @@
 .video {
    width: 100%;
    height: 100%;
-   object-fit: cover; /* Hard crop to container */
+   object-fit: contain; /* Hard crop to container */
    object-position: center;
    display: block;
 }

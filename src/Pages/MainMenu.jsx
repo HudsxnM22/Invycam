@@ -9,7 +9,7 @@ import RoomOptionsForm from "../Components/RoomOptionsForm"
 import connectionManager from "../Utils/ConnectionManager"
 
 //the menu that contains all the general information and room management
-const MainMenu = ({ refToRecordArea }) => {
+const MainMenu = () => {
     const mode = useModeStore((state) => state.mode)
     const recordSelectMode = useModeStore((state) => state.recordSelectMode)
     const setRecordSelectMode = useModeStore((state) => state.setRecordSelectMode)
@@ -23,9 +23,11 @@ const MainMenu = ({ refToRecordArea }) => {
     const video = useRef(null)
 
     useEffect(() => {
-        connectionManager.getLocalStream().then(stream => {
-            video.current.srcObject = stream
-        })
+        if(startedStream){
+            connectionManager.getLocalStream().then(stream => {
+                video.current.srcObject = stream
+            })
+        }
     }, [startedStream, localStream])
 
     const recordButtonHandler = () => {

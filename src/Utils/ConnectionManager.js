@@ -34,30 +34,18 @@ const ConnectionManager = class {
             // Capture screen
             const stream = await navigator.mediaDevices.getDisplayMedia({
                 video: {
-                    frameRate: { ideal: 30 } 
+                    frameRate: 10
                 },
                 
                 audio: false
             })
 
-            //once the video is working and loaded process it then set local stream to it so the peers only recieve that cropped part.
-            preProccessedVideoElement.onloadedmetadata = () => {
-                preProccessedVideoElement.play();
-                const preProccessedVideoElement = document.createElement("video")
-                preProccessedVideoElement.srcObject = stream //entire screen
 
-                const {startX, startY, width, height} = screenCoordinatesToDraw
+            
 
-                const canvasToCropVideoTo = document.createElement("canvas")
-                canvasToCropVideoTo.width = width
-                canvasToCropVideoTo.height = height
-
-                const ctx = canvasToCropVideoTo.getContext('2d')
-                ctx.drawImage(preProccessedVideoElement, startX, startY, width, height)
-
-                this.localStream = canvasToCropVideoTo.captureStream(15)
-                state.setStartedStream(true)
-            }      
+            this.localStream = stream
+            state.setStartedStream(true)
+            state.setLocalStream(this.localStream)
         }catch (error) {
             console.error("Error setting local stream:", error)
             throw error

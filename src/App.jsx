@@ -75,6 +75,13 @@ function App() {
       //I do it this way so that it saves across renders and is more performant than changing a state every mouse move or mouse up. enter finalizes the area...
       const areaElement = document.querySelector(".areaToRecord")
       const rect = areaElement.getBoundingClientRect()
+
+      console.log({
+        startX: rect.left,
+        startY: rect.top, 
+        width: rect.width,
+        height: rect.height
+      })
       
       connectionManager.setLocalStream({
         startX: rect.left,
@@ -100,10 +107,10 @@ function App() {
 
   return (
     <>
-      <canvas ref={recordArea} className="areaToRecord" style={{backgroundColor: recordSelectMode ? "#e89d4862" : "transparent"}}></canvas>
+      <div ref={recordArea} className="areaToRecord" style={{backgroundColor: recordSelectMode ? "#e89d4862" : "transparent"}}></div>
       {recordSelectMode && areaSelected ? <h1 className="pressEnterToConfirmAreaText">Press Enter To Confirm Area</h1> : <></>}
       {mode === "menu" && !recordSelectMode ?
-        <MainMenu refToRecordArea={recordArea}></MainMenu>
+        <MainMenu></MainMenu>
       : mode === "edit" ?
         <></>
       :
