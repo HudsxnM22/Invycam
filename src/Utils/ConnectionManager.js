@@ -23,6 +23,7 @@ const ConnectionManager = class {
     peerConnections = {}
     roomKey = "" 
     username = "Guest"
+    canvasStreamElement = null
 
     //maybe some window management for the various peers. later
 
@@ -40,10 +41,57 @@ const ConnectionManager = class {
                 audio: false
             })
 
+            //if canvas already exists, dont create a new one.
+            if(!this.canvasStreamElement){
+                const canvas = document.createElement('canvas')
+                const video = document.createElement('video')
+                this.canvasStreamElement = {
+                    canvas: canvas,
+                    video: video,
+                    rafID: null,
+                    screenStream: null
+                }
+            }
 
+            const prev = this.canvasStreamElement.screenStream
+            if (prev && prev !== stream){
+                prev.getTracks().forEach(track => { try { track.stop() } catch(e){} })
+            }
+            this.canvasStreamElement.screenStream = stream
+
+            if(this.localStream){
+                //stop all tracks of the previous stream before replacing it
+                this.localStream.getTracks().forEach(track => track.stop())
+            }
+
+            // Draw the captured screen onto a canvas and crop it
+            this.canvasStreamElement.video.srcObject = stream
+            const ctx = this.canvasStreamElement.canvas.getContext('2d')
+            const { startX, startY, width, height } = screenCoordinatesToDraw
+
+            this.canvasStreamElement.canvas.width = width
+            this.canvasStreamElement.canvas.height = height
+            this.canvasStreamElement.canvas.style.display = 'none'
             
+            await this.canvasStreamElement.video.play()
+            
+            // recursively draw video frames onto the canvas
+            const updateCanvas = async () => {
+                try{
+                    ctx.drawImage(this.canvasStreamElement.video, startX, startY, width, height, 0, 0, width, height)
+                }catch(e){}
+                this.canvasStreamElement.rafID = requestAnimationFrame(updateCanvas)
+            }
 
-            this.localStream = stream
+            // Stop any ongoing animation frames before starting a new one
+            if(this.canvasStreamElement.rafID){
+                cancelAnimationFrame(this.canvasStreamElement.rafID)
+                this.canvasStreamElement.rafID = null
+            }
+            
+            this.localStream = this.canvasStreamElement.canvas.captureStream(10) // 10 FPS
+            updateCanvas()
+
             state.setStartedStream(true)
             state.setLocalStream(this.localStream)
         }catch (error) {
@@ -382,6 +430,7 @@ const ConnectionManager = class {
                 if(this.localStream){
                     resolve(this.localStream)
                     clearTimeout(timeout)
+                    clearInterval(interval)
                 }
             }, 100)
             const timeout = setTimeout(() => {
