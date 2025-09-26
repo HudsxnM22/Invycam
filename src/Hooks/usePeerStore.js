@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 const usePeersStore = create((set) => ({
-    peers: [],
+    peers: {},
 
     updatePeers: (newPeers) => set({peers: newPeers})
 }))

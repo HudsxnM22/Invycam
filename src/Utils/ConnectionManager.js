@@ -19,13 +19,11 @@ const ConnectionManager = class {
     roomStatus = "disconnected"
     userId = ""
     localStream = null
-    role = "guest" // or "host", depending on the role in the room
+    role = "guest" // or "host", depending on the role in the room is specific to this user.
     peerConnections = {}
     roomKey = "" 
     username = "Guest"
     canvasStreamElement = null
-
-    //maybe some window management for the various peers. later
 
     constructor(){
     }
@@ -224,11 +222,12 @@ const ConnectionManager = class {
                 this.roomKey = ""
 
                 // close all peer connections
+                peerState.updatePeers({})
                 for(let peerId in this.peerConnections){
-                    peerState.updatePeers([])
                     this.peerConnections[peerId].closeConnection()
                     delete this.peerConnections[peerId]
                 }
+                
             }
             catch (error) {
                 console.error("Error calling signalling server: ", error)
@@ -236,7 +235,7 @@ const ConnectionManager = class {
         }
     }
 
-    async getServerRoomUsers(){
+    async getServerRoomUsers(){ //called when sending offers to get the list of users in the room from the signalling server.
         if(this.roomStatus === "connected"){
             try {
                 const response = await this.signallingServerCall("getRoomUsers", {})
@@ -301,23 +300,6 @@ const ConnectionManager = class {
         }
     }
 
-    getRemoteStreams() {
-        let remoteStreams = []
-        
-        for(let peerId in this.peerConnections){
-            const connection = this.peerConnections[peerId]
-            
-            // Return immediately available streams only
-            if (connection.remoteStream) {
-                remoteStreams.push(connection.remoteStream)
-            } else {
-                console.log(`Remote stream not yet available for peer ${peerId}`)
-            }
-        }
-        
-        return Promise.resolve(remoteStreams)
-    }
-
     // web socket listeners for offers, answers, and events
     async startWebSocketConnectionMonitoring(){
         if(this.roomStatus != "connected"){
@@ -352,6 +334,10 @@ const ConnectionManager = class {
                         console.log(connection)
                         console.log(answer) //TODO remove this log
                         this.signallingServerCall("sendAnswer", answer)
+                        connection.username = offerData.username
+                        connection.isHost = offerData.isHost
+                        peerState.updatePeers(this.peerConnections)
+
                         break
 
                     case "answer":
@@ -366,6 +352,9 @@ const ConnectionManager = class {
                         try{
                             const connection = this.peerConnections[answerData.from_user_id]
                             await connection.processAnswer(answerData.answer)
+                            connection.username = answerData.username
+                            connection.isHost = answerData.isHost
+                            peerState.updatePeers(this.peerConnections)
                         }
                         catch (error){
                             console.error("answer websocket error: " + error)
@@ -378,6 +367,7 @@ const ConnectionManager = class {
                             console.log(this.peerConnections)
                             this.peerConnections[disconnectData.user_id].closeConnection()
                             delete this.peerConnections[disconnectData.user_id]
+                            peerState.updatePeers(this.peerConnections)
                             console.log(this.peerConnections)
                         }
                         else {
@@ -391,6 +381,10 @@ const ConnectionManager = class {
                             this.role = "host"
                         }
                         this.roomKey = reallocationData.room_key //only host has access to this key. for kicking users and other host actions
+                        this.peerConnections[reallocationData.new_host_id].isHost = true
+                        peerState.updatePeers(this.peerConnections)
+                        state.setRole(this.role)
+                        
                         break
                 }
             }

@@ -10,6 +10,9 @@ const Connection = class {
 
     peerId = ""
 
+    username = ""
+    isHost = false //for visualization purposes only
+
 
     peerConnection = new RTCPeerConnection(
         {
