@@ -5,8 +5,9 @@ import usePeersStore from "../Hooks/usePeerStore"
 import useClientStore from "../Hooks/useClientStore"
 import TopBar from "../Components/Topbar"
 import styles from "./MainMenu.module.css"
-import RoomOptionsForm from "../Components/RoomOptionsForm"
+import RoomOptionsForm from "../Components/MainMenu/RoomOptionsForm"
 import connectionManager from "../Utils/ConnectionManager"
+import PeersScrollableMenu from "../Components/MainMenu/PeersScrollableMenu"
 
 //the menu that contains all the general information and room management
 const MainMenu = () => {
@@ -51,6 +52,9 @@ const MainMenu = () => {
                             </div>
                         </section>
                     </div>
+                    <section className={styles.rightHalf}>
+                        <PeersScrollableMenu></PeersScrollableMenu>
+                    </section>
             </section>
         </div>
     )

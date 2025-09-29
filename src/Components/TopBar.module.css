@@ -4,7 +4,7 @@
     align-items: center;
     width: 33vw;
     height: 4vh;
-    background: var(--primary-color);
+    
     border-radius: 10px 10px 0 0;
     padding: 0 1vw;
     gap: 0.5vw;
@@ -28,7 +28,6 @@
 }
 
 .topbarButtonContainer:hover {
-    background: rgba(232, 157, 72, 0.2);
     transform: scale(1.1);
 }
 
@@ -39,17 +38,17 @@
 
 /* Bug report button - typically positioned on the left or first */
 .topbarButtonContainer[name="bug-report"]:hover {
-    background: rgba(232, 157, 72, 0.3);
+    background: rgba(165, 165, 165, 0.3);
 }
 
 /* Minimize button styling */
 .topbarButtonContainer[name="minimize"]:hover {
-    background: rgba(233, 226, 15, 0.3);
+    background: rgba(165, 165, 165, 0.3);
 }
 
 /* Exit button styling */
 .topbarButtonContainer[name="exit"]:hover {
-    background: rgba(231, 76, 60, 0.3);
+    background: rgba(165, 165, 165, 0.3);
 }
 
 /* Icon styling */
@@ -72,26 +71,16 @@
 
 /* Specific icon colors on hover */
 .topbarButtonContainer[name="bug-report"]:hover .bugIcon {
-    stroke: var(--primary-color);
-    fill: var(--primary-color);
+    stroke: white;
+    fill: white;
 }
 
 .topbarButtonContainer[name="minimize"]:hover .minimizeIcon {
-    stroke: var(--secondary-color);
+    stroke: white;
     fill: none;
 }
 
 .topbarButtonContainer[name="exit"]:hover .closeIcon {
-    stroke: #e74c3c;
+    stroke: white;
     fill: none;
-}
-
-/* Focus states for accessibility */
-.topbarButtonContainer:focus {
-    outline: 0.2vh solid var(--primary-color);
-    outline-offset: 0.1vh;
-}
-
-.topbarButtonContainer:focus:not(:focus-visible) {
-    outline: none;
 }

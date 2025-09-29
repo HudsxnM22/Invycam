@@ -107,7 +107,7 @@ function App() {
 
   return (
     <>
-      <div ref={recordArea} className="areaToRecord" style={{backgroundColor: recordSelectMode ? "#e89d4862" : "transparent"}}></div>
+      <div ref={recordArea} className="areaToRecord" style={{backgroundColor: recordSelectMode ? "#80808062" : "transparent"}}></div>
       {recordSelectMode && areaSelected ? <h1 className="pressEnterToConfirmAreaText">Press Enter To Confirm Area</h1> : <></>}
       {mode === "menu" && !recordSelectMode ?
         <MainMenu></MainMenu>

@@ -5,7 +5,7 @@
     border-radius: 10px;
     margin-top: 5vh;
 
-    background: linear-gradient(135deg, var(--background-color), rgba(60, 68, 81, 0.8));
+    background: linear-gradient(145deg, #354662e9, #3c4451e9);
     
 }
 
@@ -22,6 +22,16 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+.rightHalf{
+    width: 35%;
+    margin-left: 2%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+    box-shadow: 0 0.2vh 0.2vw white;
+    background: linear-gradient(145deg, #35466231, #3c445197);
 }
 
 .streamPreviewContainer {
@@ -70,8 +80,7 @@
 
 .changeStreamButton:hover {
     transform: translateY(-1px);
-    background-color: var(--secondary-color);
-    box-shadow: 0 0.2vh 0.2vw var(--secondary-color);
+    background-color: rgba(165, 165, 165, 0.196);
 }
 
 .startStreamButton {
@@ -96,8 +105,7 @@
 
 .startStreamButton:hover {
     transform: translateY(-1px);
-    background-color: var(--secondary-color);
-    box-shadow: 0 0.2vh 0.2vw var(--secondary-color);
+    background-color: rgba(165, 165, 165, 0.196);
 }
 
 
