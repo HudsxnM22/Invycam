@@ -1,7 +1,7 @@
 :root {
-  --primary-color: #e89d48;
-  --secondary-color: #e9e20f;
-  --background-color: #3c4451;
+  --primary-color: rgba(59, 64, 160, 0.3);
+  --secondary-color: rgba(165, 165, 165, 0.3);
+  --background-color: linear-gradient(145deg, #354662e9, #3c4451e9);
   --text-color: #ffffff;
   --secondary-text-color: #000000;
   --font-family: 'Ubuntu', sans-serif;
@@ -31,13 +31,15 @@ body {
 
   isolation: isolate;
   transform-style: flat;
+
+  
 }
 
 .pressEnterToConfirmAreaText {
   margin-top: 43%;
   text-align: center;
   font-size: 3vw;
-  color: var(--primary-color);
+  color: white;
   opacity: 0.5;
 }
 

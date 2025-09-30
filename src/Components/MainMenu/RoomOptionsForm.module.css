@@ -5,7 +5,7 @@
   padding: 2vh 2vw 5vh 2vw;
   width: 80%;
   height: 40%;
-  box-shadow: 0 0.2vh 0.2vw rgb(220, 220, 220);
+  
   transition: all 500ms;
 }
 
@@ -60,7 +60,7 @@
 .formControl input:focus,
 .formControl input:valid {
   outline: 0;
-  border-bottom-color: var(--primary-color);
+  border-bottom-color: white;
 }
 
 .formControl label {
@@ -81,7 +81,7 @@
 
 .formControl input:focus + label span,
 .formControl input:valid + label span {
-  color: var(--primary-color);
+  color: white;
   transform: translateY(-2.0vh);
   font-size: 0.8vw;
 }
@@ -104,11 +104,10 @@
   transition: all 0.3s ease;
   text-transform: capitalize;
   margin-top: 0.2vh;
-  box-shadow: 0 0.1vh 0.1vw var(--primary-color);
+  box-shadow: 0 0.1vh 0.1vw white;
 }
 
 .submitButton:hover {
-  background-color: rgba(250, 162, 54, 0.708);
+  background-color: rgba(165, 165, 165, 0.196);
   transform: translateY(-0.1vh);
-  box-shadow: 0 0.4vh 0.5vw rgba(251, 183, 25, 0.3);
 }

@@ -19,12 +19,11 @@ const ConnectionManager = class {
     roomStatus = "disconnected"
     userId = ""
     localStream = null
-    role = "guest" // or "host", depending on the role in the room
+    role = "guest" // or "host", depending on the role in the room is specific to this user.
     peerConnections = {}
     roomKey = "" 
     username = "Guest"
-
-    //maybe some window management for the various peers. later
+    canvasStreamElement = null
 
     constructor(){
     }
@@ -40,10 +39,57 @@ const ConnectionManager = class {
                 audio: false
             })
 
+            //if canvas already exists, dont create a new one.
+            if(!this.canvasStreamElement){
+                const canvas = document.createElement('canvas')
+                const video = document.createElement('video')
+                this.canvasStreamElement = {
+                    canvas: canvas,
+                    video: video,
+                    rafID: null,
+                    screenStream: null
+                }
+            }
 
+            const prev = this.canvasStreamElement.screenStream
+            if (prev && prev !== stream){
+                prev.getTracks().forEach(track => { try { track.stop() } catch(e){} })
+            }
+            this.canvasStreamElement.screenStream = stream
+
+            if(this.localStream){
+                //stop all tracks of the previous stream before replacing it
+                this.localStream.getTracks().forEach(track => track.stop())
+            }
+
+            // Draw the captured screen onto a canvas and crop it
+            this.canvasStreamElement.video.srcObject = stream
+            const ctx = this.canvasStreamElement.canvas.getContext('2d')
+            const { startX, startY, width, height } = screenCoordinatesToDraw
+
+            this.canvasStreamElement.canvas.width = width
+            this.canvasStreamElement.canvas.height = height
+            this.canvasStreamElement.canvas.style.display = 'none'
             
+            await this.canvasStreamElement.video.play()
+            
+            // recursively draw video frames onto the canvas
+            const updateCanvas = async () => {
+                try{
+                    ctx.drawImage(this.canvasStreamElement.video, startX, startY, width, height, 0, 0, width, height)
+                }catch(e){}
+                this.canvasStreamElement.rafID = requestAnimationFrame(updateCanvas)
+            }
 
-            this.localStream = stream
+            // Stop any ongoing animation frames before starting a new one
+            if(this.canvasStreamElement.rafID){
+                cancelAnimationFrame(this.canvasStreamElement.rafID)
+                this.canvasStreamElement.rafID = null
+            }
+            
+            this.localStream = this.canvasStreamElement.canvas.captureStream(10) // 10 FPS
+            updateCanvas()
+
             state.setStartedStream(true)
             state.setLocalStream(this.localStream)
         }catch (error) {
@@ -176,11 +222,12 @@ const ConnectionManager = class {
                 this.roomKey = ""
 
                 // close all peer connections
+                peerState.updatePeers({})
                 for(let peerId in this.peerConnections){
-                    peerState.updatePeers([])
                     this.peerConnections[peerId].closeConnection()
                     delete this.peerConnections[peerId]
                 }
+                
             }
             catch (error) {
                 console.error("Error calling signalling server: ", error)
@@ -188,7 +235,7 @@ const ConnectionManager = class {
         }
     }
 
-    async getServerRoomUsers(){
+    async getServerRoomUsers(){ //called when sending offers to get the list of users in the room from the signalling server.
         if(this.roomStatus === "connected"){
             try {
                 const response = await this.signallingServerCall("getRoomUsers", {})
@@ -253,23 +300,6 @@ const ConnectionManager = class {
         }
     }
 
-    getRemoteStreams() {
-        let remoteStreams = []
-        
-        for(let peerId in this.peerConnections){
-            const connection = this.peerConnections[peerId]
-            
-            // Return immediately available streams only
-            if (connection.remoteStream) {
-                remoteStreams.push(connection.remoteStream)
-            } else {
-                console.log(`Remote stream not yet available for peer ${peerId}`)
-            }
-        }
-        
-        return Promise.resolve(remoteStreams)
-    }
-
     // web socket listeners for offers, answers, and events
     async startWebSocketConnectionMonitoring(){
         if(this.roomStatus != "connected"){
@@ -304,6 +334,10 @@ const ConnectionManager = class {
                         console.log(connection)
                         console.log(answer) //TODO remove this log
                         this.signallingServerCall("sendAnswer", answer)
+                        connection.username = offerData.username
+                        connection.isHost = offerData.isHost
+                        peerState.updatePeers(this.peerConnections)
+
                         break
 
                     case "answer":
@@ -318,6 +352,9 @@ const ConnectionManager = class {
                         try{
                             const connection = this.peerConnections[answerData.from_user_id]
                             await connection.processAnswer(answerData.answer)
+                            connection.username = answerData.username
+                            connection.isHost = answerData.isHost
+                            peerState.updatePeers(this.peerConnections)
                         }
                         catch (error){
                             console.error("answer websocket error: " + error)
@@ -330,6 +367,7 @@ const ConnectionManager = class {
                             console.log(this.peerConnections)
                             this.peerConnections[disconnectData.user_id].closeConnection()
                             delete this.peerConnections[disconnectData.user_id]
+                            peerState.updatePeers(this.peerConnections)
                             console.log(this.peerConnections)
                         }
                         else {
@@ -343,6 +381,10 @@ const ConnectionManager = class {
                             this.role = "host"
                         }
                         this.roomKey = reallocationData.room_key //only host has access to this key. for kicking users and other host actions
+                        this.peerConnections[reallocationData.new_host_id].isHost = true
+                        peerState.updatePeers(this.peerConnections)
+                        state.setRole(this.role)
+                        
                         break
                 }
             }
@@ -382,6 +424,7 @@ const ConnectionManager = class {
                 if(this.localStream){
                     resolve(this.localStream)
                     clearTimeout(timeout)
+                    clearInterval(interval)
                 }
             }, 100)
             const timeout = setTimeout(() => {
