@@ -1,0 +1,163 @@
+.peerCardContainer {
+    width: 320px;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease;
+}
+
+.peerCardContainer:hover {
+    transform: translateY(-4px);
+}
+
+.peerVideoContainer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.peerVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Username overlay at top */
+.usernameOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: linear-gradient(180deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.4) 50%,
+            rgba(0, 0, 0, 0) 100%);
+    backdrop-filter: blur(8px);
+    z-index: 2;
+}
+
+.peerName {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    text-align: left;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Controls overlay at bottom */
+.controlsOverlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: linear-gradient(0deg,
+            rgba(0, 0, 0, 0.7) 0%,
+            rgba(0, 0, 0, 0.4) 50%,
+            rgba(0, 0, 0, 0) 100%);
+    backdrop-filter: blur(10px);
+    z-index: 2;
+}
+
+.peerControlsContainer {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.peerControlsContainer>button:not(:first-child) {
+    margin-left: auto;
+}
+
+.peerControlsContainer>button:nth-child(2) {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.peerControlsContainer>button:last-child {
+    margin-left: 10px;
+}
+
+.peerControlButton {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    height: fit-content;
+}
+
+.peerControlButton:hover {
+    transform: scale(1.15);
+}
+
+.peerControlButton:active {
+    transform: scale(0.9);
+}
+
+.SVGs {
+    width: 28px;
+    height: 28px;
+    transition: all 0.2s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.SVGs path {
+    fill: #ffffff;
+    transition: fill 0.2s ease;
+}
+
+.peerControlButton:hover .SVGs path {
+    fill: #ffffff;
+}
+
+.peerControlButton:first-child:hover .SVGs path {
+    fill: #ef4444;
+}
+
+.peerControlButton:nth-child(2):hover .SVGs path {
+    fill: #3b82f6;
+}
+
+.peerControlButton:last-child:hover .SVGs path {
+    fill: #22c55e;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .peerCardContainer {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .peerControlButton {
+        width: 44px;
+        height: 44px;
+    }
+
+    .SVGs {
+        width: 20px;
+        height: 20px;
+    }
+}

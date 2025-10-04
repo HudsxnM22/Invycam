@@ -12,6 +12,7 @@ const Connection = class {
 
     username = ""
     isHost = false //for visualization purposes only
+    onScreen = false //whether the peer is currently being displayed on the screen or not
 
 
     peerConnection = new RTCPeerConnection(

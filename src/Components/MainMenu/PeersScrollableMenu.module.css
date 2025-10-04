@@ -16,3 +16,24 @@
     margin-top: 0%;
     text-align: center;
 }
+
+/* Transparent scrollbar for Chromium browsers */
+.peersScrollableMenuContainer::-webkit-scrollbar {
+    width: 12px;
+}
+
+.peersScrollableMenuContainer::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.peersScrollableMenuContainer::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.peersScrollableMenuContainer::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+    background-clip: padding-box;
+}
