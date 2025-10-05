@@ -10,12 +10,24 @@ const PeersScrollableMenu = () => {
 
     //const peers = usePeersStore((state) => state.peers) //an object of all the instances of Connections / peers
     const client = useClientStore((state) => state) //the client store, contains info about the local user
+    //const peers = usePeersStore((state) => state.peers) //an object of all the instances of Connections / peers
 
-    //mock data
+    //mock data for testing
     const peers = {
-        "9023nm89": {username: "Alice", onScreen: true, isHost: true},
-        "s3nkk32": {username: "Bob", onScreen: false, isHost: false},
-        "jsd9033": {username: "Charlie", onScreen: true, isHost: false}
+        "ijowedfoi89": {username: "Alice", peerId: "ijowedfoi89", onScreen: true, getRemoteStream: async () => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve("https://download.blender.org/peerweb/bigbuckbunny_movies/BigBuckBunny_320x180.mp4")
+                }, 13000)
+            })
+        }},
+        "oiwejfowe": {username: "Bob", peerId: "oiwejfowe", onScreen: false, getRemoteStream: async () => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve("https://download.blender.org/peerweb/bigbuckbunny_movies/BigBuckBunny_320x180.mp4")
+                }, 10000)
+            })
+        }},
     }
 
     const populatePeers = () => {
