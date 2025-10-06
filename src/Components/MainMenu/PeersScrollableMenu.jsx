@@ -9,23 +9,8 @@ import Connection from "../../Utils/Connection"
 
 const PeersScrollableMenu = () => {
 
-    //const peers = usePeersStore((state) => state.peers) //an object of all the instances of Connections / peers
+    const peers = usePeersStore((state) => state.peers) //an object of all the instances of Connections / peers
     const client = useClientStore((state) => state) //the client store, contains info about the local user\
-
-    //mock data for testing
-    const peers = {
-        "abc123": new Connection("abc123"),
-        "def456": new Connection("def456"),
-        "ghi789": new Connection("ghi789"),
-    }
-
-    peers["abc123"].username = "Alice"
-    peers["def456"].username = "Bob"
-    peers["ghi789"].username = "Charlie"
-
-    peers["abc123"].remoteStream = client.localStream
-    peers["def456"].remoteStream = client.localStream
-    peers["ghi789"].remoteStream = client.localStream
 
     const populatePeers = () => {
         return Object.keys(peers).map((peerId) => {

@@ -2,11 +2,11 @@ import React from "react";
 import { useState, useEffect, useRef } from "react";
 import useModeStore from "../../Hooks/useModeStore";
 import styles from "./OnScreenRemoteStream.module.css";
+import Operation from "../../Pages/Operation";
 
 const OnScreenRemoteStream = ({ peer }) => {
+    const mode = useModeStore((state) => state.mode)
     //peer === an instance of Connection
-    const [videoContainerData, setVideoContainerData] = useState(peer.displayData)
-    console.log(videoContainerData.position.left)
     const video = useRef(null)
     const videoContainer = useRef(null)
 
@@ -27,48 +27,52 @@ const OnScreenRemoteStream = ({ peer }) => {
         const startWidth = videoContainer.current.offsetWidth
 
         const handleMouseMove = (event) => {
-            const currentX = event.clientX
-            const currentWidth = videoContainer.current.offsetWidth
-            
-
             const deltaX = event.clientX - startX;
             const newWidth = startWidth + deltaX;
-            setVideoContainerData(prevData => ({
-                ...prevData,
-                size: {...prevData.size, width: newWidth + "px"}
-            }))
+            videoContainer.current.style.width = newWidth + "px"
         }
         const handleMouseUp = () => {
             document.removeEventListener("mousemove", handleMouseMove)
             document.removeEventListener("mouseup", handleMouseUp)
-            peer.displayData = videoContainerData //save the new size to the peer instance
+            peer.displayData.size.width = videoContainer.current.style.width
         }
 
         document.addEventListener("mousemove", handleMouseMove);
         document.addEventListener("mouseup", handleMouseUp);
     }
 
+    //handles moving around video container
     const handleContainerMove = (e) => {
         e.preventDefault()
         e.stopPropagation()
 
-        
         const startX = e.clientX
         const startY = e.clientY
-        const startLeft = videoContainer.current.offsetLeft
         const containerRect = videoContainer.current.getBoundingClientRect();
+        
+        const parentRect = videoContainer.current.offsetParent.getBoundingClientRect();
+        
+        const startLeft = containerRect.left - parentRect.left;
         const startBottom = window.innerHeight - containerRect.bottom;
+        videoContainer.current.style.cursor = "grabbing"
 
         const handleMouseMove = (event) => {
-            const currentX = event.clientX
-            const currentY = event.clientY
-            const newLeft = startLeft + (currentX - startX)
-            const newBottom = startBottom + (currentY - startY)
+            const deltaX = event.clientX - startX
+            const deltaY = event.clientY - startY
+
+            const newLeft = startLeft + deltaX
+            const newBottom = startBottom - deltaY
+
+            videoContainer.current.style.left = newLeft + "px"
+            videoContainer.current.style.bottom = newBottom + "px"
         }
 
         const handleMouseUp = () => {
             document.removeEventListener("mousemove", handleMouseMove)
             document.removeEventListener("mouseup", handleMouseUp)
+            peer.displayData.position.left = videoContainer.current.style.left
+            peer.displayData.position.bottom = videoContainer.current.style.bottom
+            videoContainer.current.style.cursor = "grab"
         }
 
         document.addEventListener("mousemove", handleMouseMove);
@@ -78,12 +82,12 @@ const OnScreenRemoteStream = ({ peer }) => {
 
     return (
         <>
-        <div className={styles.onScreenRemoteStreamContainer} 
-        style={{left: videoContainerData.position.left, bottom: videoContainerData.position.bottom, width: videoContainerData.size.width}} 
+        <div className={styles.onScreenRemoteStreamContainer}
+        style={{left: peer.displayData.position.left, bottom: peer.displayData.position.bottom, width: peer.displayData.size.width, border: mode !== "operation" ? "2px dashed white" : "transparent"}} 
         ref={videoContainer}
         onMouseDown={handleContainerMove}
         >
-            <div className={styles.resizeBubble} onMouseDown={handleBubbleMouseDown}></div>
+            <div className={styles.resizeBubble} onMouseDown={handleBubbleMouseDown} style={{visibility: mode !== "operation" ? "visible" : "hidden"}}></div>
             <video
                 muted
                 ref={video}

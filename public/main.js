@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, desktopCapturer, session } = require('electron');
 const path = require('path');
+const { startListenForKeys } = require('./keyEventListener')
 
 let win;
 
@@ -35,7 +36,7 @@ function createWindow() {
   }, { useSystemPicker: false });
 
   //win.setIgnoreMouseEvents(true); //TEST
-  win.webContents.openDevTools()
+  //win.webContents.openDevTools()
   // Load the React app
   const isDev = process.env.NODE_ENV === 'development';
   
@@ -52,6 +53,7 @@ ipcMain.handle('enable-focus', async () => {
   if(win.isDestroyed() || !win)
     return {success: false}
   win.setFocusable(true)
+  win.setIgnoreMouseEvents(false, {forward: false})
 
   return {success: true}
 })
@@ -60,6 +62,7 @@ ipcMain.handle('disable-focus', async () => {
   if(win.isDestroyed() || !win)
     return {success: false}
   win.setFocusable(false)
+  win.setIgnoreMouseEvents(true, {forward: true})
 
   return {success: true}
 })
@@ -69,7 +72,10 @@ ipcMain.handle('close-app', async () => {
 })
 
 // This method will be called when Electron has finished initialization
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow()
+  startListenForKeys(win)
+});
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {

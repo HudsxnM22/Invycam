@@ -2,10 +2,14 @@ import React from "react"
 import useModeStore from "../Hooks/useModeStore"
 import styles from "./TopBar.module.css"
 import useClientStore from "../Hooks/useClientStore"
+import usePeersStore from "../Hooks/usePeerStore"
+import Connection from "../Utils/Connection"
 
 //top bar of menu contains the X and - to minimize and close the application
 const TopBar = () => {
     const changeMode = useModeStore((state) => state.changeMode)
+    const updatePeers = usePeersStore((state) => state.updatePeers)
+    const localStream = useClientStore((state) => state.localStream)
 
     //TODO remove me later
     const roomStatus = useClientStore((state) => state.roomStatus)
@@ -13,15 +17,35 @@ const TopBar = () => {
 
     const minimizeHandler = () => {
         changeMode("operation") //unmount the menu.
+        window.ipc.enterOperationMode()
     }
 
     const exitHandler = async () => {
         window.ipc.closeApp()
     }
 
+
     return (
         <span className={styles.topbarContainer}>
-            <button className={styles.topbarButtonContainer} name="bug-report" onClick={() => {setRoomStatus(roomStatus === "connected" ? "disconnected" : "connected")}}> 
+            <button className={styles.topbarButtonContainer} name="bug-report" onClick={() => 
+                {
+                    setRoomStatus(roomStatus === "connected" ? "disconnected" : "connected")
+                    //TODO delete me
+
+                    const peers = {
+                            "hj2k3": new Connection("hj2k3"),
+                            "hj324": new Connection("hj324")
+                        }
+                        
+                        peers.hj2k3.username = "Anonym"
+                        peers.hj324.username = "bobby"
+
+                        peers.hj2k3.remoteStream = localStream
+                        peers.hj324.remoteStream = localStream
+
+                    updatePeers(peers)
+                    console.log(peers)
+                }}> 
                   <svg 
                     className={styles.bugIcon}
                     viewBox="0 0 16 16" 

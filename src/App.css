@@ -5,7 +5,7 @@
   --text-color: #ffffff;
   --secondary-text-color: #000000;
   --font-family: 'Ubuntu', sans-serif;
-  --edit-background-color: rgba(62, 62, 62, 0.291);
+  --edit-background-color: rgba(62, 62, 62, 0.505);
 
   background-color: var(--edit-background-color);
 }

@@ -4,9 +4,11 @@ import useModeStore from './Hooks/useModeStore';
 import "./App.css"
 import connectionManager from './Utils/ConnectionManager'; //TODO make it so this updates the client store state too
 import Edit from './Pages/Edit';
+import Operation from './Pages/Operation';
 
 function App() {
   const mode = useModeStore((state) => state.mode)
+  const setMode = useModeStore((state) => state.changeMode)
   const recordSelectMode = useModeStore((state) => state.recordSelectMode)
   const setRecordSelectMode = useModeStore((state) => state.setRecordSelectMode)
   const [areaSelected, setAreaSelected] = useState(false)
@@ -107,12 +109,20 @@ function App() {
   }, [recordSelectMode]);
 
   useEffect(() => {
-    if(mode !== "menu" || mode !== "edit"){
-      document.documentElement.style.setProperty('--edit-background-color', 'transparent');
-    }else{
+    if(mode === "menu" || mode === "edit"){
       document.documentElement.style.setProperty('--edit-background-color', 'rgba(62, 62, 62, 0.291)');
+    }else{
+      document.documentElement.style.setProperty('--edit-background-color', 'transparent');
     }
   }, [mode])
+
+  //listens for key press to open menu... then updates mode to menu too
+  //TODO make so it doesnt constantly rerender
+  useEffect(() => {
+    window.ipc.openMenu(() => {
+      setMode("menu")
+    })
+  }, [])
 
   return (
     <>
@@ -123,7 +133,7 @@ function App() {
       : mode === "edit" ?
         <Edit></Edit>
       :
-        <></>
+        <Operation></Operation>
       }
     </>
   );
