@@ -3,6 +3,7 @@ import MainMenu from './Pages/MainMenu';
 import useModeStore from './Hooks/useModeStore';
 import "./App.css"
 import connectionManager from './Utils/ConnectionManager'; //TODO make it so this updates the client store state too
+import Edit from './Pages/Edit';
 
 function App() {
   const mode = useModeStore((state) => state.mode)
@@ -105,6 +106,14 @@ function App() {
     };
   }, [recordSelectMode]);
 
+  useEffect(() => {
+    if(mode !== "menu" || mode !== "edit"){
+      document.documentElement.style.setProperty('--edit-background-color', 'transparent');
+    }else{
+      document.documentElement.style.setProperty('--edit-background-color', 'rgba(62, 62, 62, 0.291)');
+    }
+  }, [mode])
+
   return (
     <>
       <div ref={recordArea} className="areaToRecord" style={{backgroundColor: recordSelectMode ? "#80808062" : "transparent"}}></div>
@@ -112,7 +121,7 @@ function App() {
       {mode === "menu" && !recordSelectMode ?
         <MainMenu></MainMenu>
       : mode === "edit" ?
-        <></>
+        <Edit></Edit>
       :
         <></>
       }

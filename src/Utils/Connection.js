@@ -14,6 +14,13 @@ const Connection = class {
     isHost = false //for visualization purposes only
     onScreen = false //whether the peer is currently being displayed on the screen or not
 
+    //display data for operational mode and edit mode
+    displayData = {
+        position: {left: "auto", bottom: "50%"},
+        size: {width: "15vw"},
+        //retains original aspect ratio
+    }
+
 
     peerConnection = new RTCPeerConnection(
         {
@@ -25,11 +32,10 @@ const Connection = class {
 
     constructor(peerId){
         this.peerId = peerId
-        this.peerConnection.addEventListener('track', async (event) => {
-            this.remoteStream = event.streams[0]
-        })
+        //this.peerConnection.addEventListener('track', async (event) => {
+        //    this.remoteStream = event.streams[0]
+        //})
     }
-
 
     async createOffer(localStream, fromUserId, toUserId){
 

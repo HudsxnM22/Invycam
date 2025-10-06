@@ -1,9 +1,9 @@
 import React, { use } from "react";
 import styles from "./PeerCard.module.css";
 import useClientStore from "../../Hooks/useClientStore";
-import usePeersStore from "../../Hooks/usePeerStore";
 import { useState, useEffect, useRef } from "react";
 import { ping } from 'ldrs'
+import useModeStore from "../../Hooks/useModeStore";
 ping.register()
 
 
@@ -13,14 +13,28 @@ const PeerCard = ({ peer }) => {
     //peer === an instance of Connection
     const [isAdded, setIsAdded] = useState(peer.onScreen); //whether the peer has been added to screen or not
     const role = useClientStore((state) => state.role);
+    const mode = useModeStore((state) => state.mode);
+    const setMode = useModeStore((state) => state.changeMode);
     const [remoteStreamStatus, setRemoteStreamStatus] = useState("loading"); //loading, ready, error
+    const addOnScreenPeer = useModeStore((state) => state.addOnScreenPeer)
+    const removeOnScreenPeer = useModeStore((state) => state.removeOnScreenPeer)
 
     const toggleAdded = () => {
         setIsAdded(!isAdded);
         peer.onScreen = !peer.onScreen;
 
-        //add to screen logic if peer.onScreen is true
-        //remove from screen logic if peer.onScreen is false
+        if(peer.onScreen){
+            addOnScreenPeer(peer)
+            setMode("edit")
+        } else {
+            removeOnScreenPeer(peer)
+        }
+    }
+
+    const toggleEditMode = () => {
+        if(mode !== "edit"){
+            useModeStore.setState({mode: "edit"})
+        }
     }
 
     const video = useRef(null)
@@ -28,20 +42,39 @@ const PeerCard = ({ peer }) => {
     useEffect(() => {
         //set video element to loading bar while waiting for remtoe stream
         peer.getRemoteStream().then(stream => {
+            console.log(stream)
             setRemoteStreamStatus("ready")
-            video.current.src = stream //chnage to srcObject if using MediaStream
+
+            video.current.srcObject = stream
         }).catch((err) => {
             setRemoteStreamStatus("error")
             console.error("Error getting remote stream for peer " + peer.peerId + ": " + err)
         })
-    }, [])
+    })
 
     const loadUI = useRef(null)
     
     return (
         <div className={styles.peerCardContainer}>
-            <h3 className={styles.peerName}>{peer.username}</h3>
+            <section className={styles.usernameOverlay}>
+                <h3 className={styles.peerName}>{peer.username}</h3>
+                {peer.isHost ? 
+                    <svg className={styles.SVGs} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19.6872 14.0931L19.8706 12.3884C19.9684 11.4789 20.033 10.8783 19.9823 10.4999L20 10.5C20.8284 10.5 21.5 9.82843 21.5 9C21.5 8.17157 20.8284 7.5 20 7.5C19.1716 7.5 18.5 8.17157 18.5 9C18.5 9.37466 18.6374 9.71724 18.8645 9.98013C18.5384 10.1814 18.1122 10.606 17.4705 11.2451L17.4705 11.2451C16.9762 11.7375 16.729 11.9837 16.4533 12.0219C16.3005 12.043 16.1449 12.0213 16.0038 11.9592C15.7492 11.847 15.5794 11.5427 15.2399 10.934L13.4505 7.7254C13.241 7.34987 13.0657 7.03557 12.9077 6.78265C13.556 6.45187 14 5.77778 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 5.77778 10.444 6.45187 11.0923 6.78265C10.9343 7.03559 10.759 7.34984 10.5495 7.7254L8.76006 10.934C8.42056 11.5427 8.25081 11.847 7.99621 11.9592C7.85514 12.0213 7.69947 12.043 7.5467 12.0219C7.27097 11.9837 7.02381 11.7375 6.5295 11.2451C5.88787 10.606 5.46156 10.1814 5.13553 9.98012C5.36264 9.71724 5.5 9.37466 5.5 9C5.5 8.17157 4.82843 7.5 4 7.5C3.17157 7.5 2.5 8.17157 2.5 9C2.5 9.82843 3.17157 10.5 4 10.5L4.01771 10.4999C3.96702 10.8783 4.03162 11.4789 4.12945 12.3884L4.3128 14.0931C4.41458 15.0393 4.49921 15.9396 4.60287 16.75H19.3971C19.5008 15.9396 19.5854 15.0393 19.6872 14.0931Z" fill="#1C274C"/>
+                    <path d="M10.9121 21H13.0879C15.9239 21 17.3418 21 18.2879 20.1532C18.7009 19.7835 18.9623 19.1172 19.151 18.25H4.84896C5.03765 19.1172 5.29913 19.7835 5.71208 20.1532C6.65817 21 8.07613 21 10.9121 21Z" fill="#1C274C"/>
+                    </svg>
+                :
+                    <></>
+                }
+            </section>
             <section className={styles.peerVideoContainer}>
+                <video 
+                        className={styles.peerVideo}
+                        autoPlay
+                        muted
+                        playsInline
+                        ref={video}
+                ></video>
                 {remoteStreamStatus === "loading" ? 
                     <div className={styles.loadingBar} ref={loadUI}>
                         <l-ping
@@ -50,17 +83,10 @@ const PeerCard = ({ peer }) => {
                             color="#354662e9" 
                         ></l-ping>
                     </div>
-                : remoteStreamStatus === "ready" ?
-                    <video 
-                        className={styles.peerVideo}
-                        autoPlay
-                        muted
-                        playsInline
-                        ref={video}
-                    ></video>
                 : remoteStreamStatus === "error" ?
-                    <p className={styles.errorText}>Error loading stream</p>
-                : <></> 
+                    <p className={styles.errorText}>Cant load stream</p>
+                : 
+                <></> 
                 }
                 <div className={styles.peerControlsOverlay}></div>
                     <section className={styles.peerControlsContainer}>
@@ -84,7 +110,7 @@ const PeerCard = ({ peer }) => {
                             <path d="M20.5355 20.5355C22 19.0711 22 16.714 22 12C22 10.4517 22 9.15774 21.9481 8.0661L15.586 14.4283C15.2347 14.7797 14.9708 15.0437 14.6738 15.2753C14.3252 15.5473 13.948 15.7804 13.5488 15.9706C13.2088 16.1327 12.8546 16.2506 12.3833 16.4076L9.45143 17.3849C8.64568 17.6535 7.75734 17.4438 7.15678 16.8432C6.55621 16.2427 6.34651 15.3543 6.61509 14.5486L7.59235 11.6167C7.74936 11.1454 7.86732 10.7912 8.02935 10.4512C8.21958 10.052 8.45272 9.6748 8.72466 9.32615C8.9563 9.02918 9.22032 8.76528 9.57173 8.41404L15.9339 2.05188C14.8423 2 13.5483 2 12 2C7.28595 2 4.92893 2 3.46447 3.46447C2 4.92893 2 7.28595 2 12C2 16.714 2 19.0711 3.46447 20.5355C4.92893 22 7.28595 22 12 22C16.714 22 19.0711 22 20.5355 20.5355Z" fill="#1C274C"/>
                             </svg>
                         </button>
-                        <button className={styles.peerControlButton}>
+                        <button className={styles.peerControlButton} onClick={toggleAdded} title="add/remove from screen">
                             {!isAdded ?
                             <>
                                 <svg className={styles.SVGs} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

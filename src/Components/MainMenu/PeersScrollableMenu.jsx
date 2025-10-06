@@ -4,31 +4,28 @@ import usePeersStore from "../../Hooks/usePeerStore"
 import useClientStore from "../../Hooks/useClientStore"
 import styles from "./PeersScrollableMenu.module.css"
 import PeerCard from "../MainMenu/PeerCard"
+import Connection from "../../Utils/Connection"
 
 
 const PeersScrollableMenu = () => {
 
     //const peers = usePeersStore((state) => state.peers) //an object of all the instances of Connections / peers
-    const client = useClientStore((state) => state) //the client store, contains info about the local user
-    //const peers = usePeersStore((state) => state.peers) //an object of all the instances of Connections / peers
+    const client = useClientStore((state) => state) //the client store, contains info about the local user\
 
     //mock data for testing
     const peers = {
-        "ijowedfoi89": {username: "Alice", peerId: "ijowedfoi89", onScreen: true, getRemoteStream: async () => {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    resolve("https://download.blender.org/peerweb/bigbuckbunny_movies/BigBuckBunny_320x180.mp4")
-                }, 13000)
-            })
-        }},
-        "oiwejfowe": {username: "Bob", peerId: "oiwejfowe", onScreen: false, getRemoteStream: async () => {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    resolve("https://download.blender.org/peerweb/bigbuckbunny_movies/BigBuckBunny_320x180.mp4")
-                }, 10000)
-            })
-        }},
+        "abc123": new Connection("abc123"),
+        "def456": new Connection("def456"),
+        "ghi789": new Connection("ghi789"),
     }
+
+    peers["abc123"].username = "Alice"
+    peers["def456"].username = "Bob"
+    peers["ghi789"].username = "Charlie"
+
+    peers["abc123"].remoteStream = client.localStream
+    peers["def456"].remoteStream = client.localStream
+    peers["ghi789"].remoteStream = client.localStream
 
     const populatePeers = () => {
         return Object.keys(peers).map((peerId) => {
