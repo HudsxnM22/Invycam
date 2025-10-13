@@ -5,7 +5,6 @@
   padding: 2vh 2vw 5vh 2vw;
   width: 80%;
   height: 40%;
-  
   transition: all 500ms;
 }
 
@@ -30,6 +29,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.5vh;
+  width: 100%;
+  height: 100%;
 }
 
 .form {
@@ -89,6 +90,7 @@
 .buttonHolder{
     display: flex;
     justify-content: space-between;
+    gap: 2%;
 }
 
 .submitButton {
@@ -105,9 +107,100 @@
   text-transform: capitalize;
   margin-top: 0.2vh;
   box-shadow: 0 0.1vh 0.1vw white;
+  width: 100%;
 }
 
 .submitButton:hover {
   background-color: rgba(165, 165, 165, 0.196);
+  transform: translateY(-0.1vh);
+}
+
+
+.loadingSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 20%;
+}
+
+.connectionManagerContainer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10%;
+  justify-content: center;
+  align-items: center;
+}
+
+.connectionManagerContainer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.connectionManagerContainer .form {
+  width: 90%;
+  max-width: 30vw;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+}
+
+.connectionManagerContainer .formControl {
+  position: relative;
+  margin: 1vh 0 1vh;
+  width: 100%;
+}
+
+.connectionManagerContainer .formControl label {
+  position: absolute;
+  top: 0.3vh;
+  left: 0;
+  pointer-events: none;
+}
+
+.connectionManagerContainer .formControl label span {
+  display: inline-block;
+  font-size: 1.0vw;
+  min-width: 0.3vw;
+  color: var(--text-color);
+  font-family: var(--font-family);
+  transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.leaveButtonHolder {
+  margin-top: 10%;
+  width: 100%;
+  height: 50%;
+
+}
+
+.leaveButton {
+  width: 100%;
+  height: 100%;
+
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 0.4vw;
+  padding: 0.5vh 1.6vw;
+  font-size: 0.8vw;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: capitalize;
+  margin-top: 0.2vh;
+  box-shadow: 0 0.1vh 0.1vw white;
+}
+
+.leaveButton:hover {
+  background-color: rgba(216, 6, 6, 0.196);
+  box-shadow: 0 0.1vh 0.1vw rgb(255, 57, 57);
   transform: translateY(-0.1vh);
 }

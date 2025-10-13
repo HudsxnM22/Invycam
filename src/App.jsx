@@ -119,9 +119,9 @@ function App() {
   //listens for key press to open menu... then updates mode to menu too
   //TODO make so it doesnt constantly rerender
   useEffect(() => {
-    window.ipc.openMenu(() => {
-      setMode("menu")
-    })
+    //window.ipc.openMenu(() => {
+    //  setMode("menu")
+    //})
   }, [])
 
   return (

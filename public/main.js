@@ -36,7 +36,7 @@ function createWindow() {
   }, { useSystemPicker: false });
 
   //win.setIgnoreMouseEvents(true); //TEST
-  //win.webContents.openDevTools()
+  win.webContents.openDevTools()
   // Load the React app
   const isDev = process.env.NODE_ENV === 'development';
   

@@ -2,8 +2,8 @@ import { create } from "zustand";
 
 const useClientStore = create((set) => ({
     roomId: "",
-    roomStatus: "disconnected",
-    role: "host", // possible values: "guest", "host" TODO: change to guest by deafault...
+    roomStatus: "disconnected", //"disconnected", "creating", "joining", "connected", "leaving"
+    role: "guest", // possible values: "guest", "host"
     username: "",
     startedStream: false,
     localStream: null,

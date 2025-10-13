@@ -30,6 +30,7 @@ const TopBar = () => {
             <button className={styles.topbarButtonContainer} name="bug-report" onClick={() => 
                 {
                     setRoomStatus(roomStatus === "connected" ? "disconnected" : "connected")
+                    
                     //TODO delete me
 
                     const peers = {
@@ -44,7 +45,6 @@ const TopBar = () => {
                         peers.hj324.remoteStream = localStream
 
                     updatePeers(peers)
-                    console.log(peers)
                 }}> 
                   <svg 
                     className={styles.bugIcon}
