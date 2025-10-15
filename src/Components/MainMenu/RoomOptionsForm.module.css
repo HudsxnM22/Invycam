@@ -108,6 +108,9 @@
   margin-top: 0.2vh;
   box-shadow: 0 0.1vh 0.1vw white;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 0.1vw;
 }
 
 .submitButton:hover {
@@ -115,6 +118,10 @@
   transform: translateY(-0.1vh);
 }
 
+.roomIcon {
+  width: 1vw;
+  height: 1vw;
+}
 
 .loadingSection {
   display: flex;

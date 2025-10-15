@@ -4,6 +4,7 @@ import styles from "./TopBar.module.css"
 import useClientStore from "../Hooks/useClientStore"
 import usePeersStore from "../Hooks/usePeerStore"
 import Connection from "../Utils/Connection"
+import useNotification from "../Hooks/useNotification"
 
 //top bar of menu contains the X and - to minimize and close the application
 const TopBar = () => {
@@ -14,6 +15,7 @@ const TopBar = () => {
     //TODO remove me later
     const roomStatus = useClientStore((state) => state.roomStatus)
     const setRoomStatus = useClientStore((state) => state.setRoomStatus)
+    const notify = useNotification((state) => state.notify)
 
     const minimizeHandler = () => {
         changeMode("operation") //unmount the menu.

@@ -5,6 +5,7 @@ import "./App.css"
 import connectionManager from './Utils/ConnectionManager'; //TODO make it so this updates the client store state too
 import Edit from './Pages/Edit';
 import Operation from './Pages/Operation';
+import NotificationProvider from './Utils/NotificationProvider';
 
 function App() {
   const mode = useModeStore((state) => state.mode)
@@ -126,6 +127,7 @@ function App() {
 
   return (
     <>
+      <NotificationProvider></NotificationProvider>
       <div ref={recordArea} className="areaToRecord" style={{backgroundColor: recordSelectMode ? "#80808062" : "transparent"}}></div>
       {recordSelectMode && areaSelected ? <h1 className="pressEnterToConfirmAreaText">Press Enter To Confirm Area</h1> : <></>}
       {mode === "menu" && !recordSelectMode ?

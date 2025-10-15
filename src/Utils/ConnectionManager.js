@@ -2,6 +2,7 @@ import axios from "axios"
 import Connection from "./Connection"
 import useClientStore from "../Hooks/useClientStore"
 import usePeersStore from "../Hooks/usePeerStore"
+import useNotification from "../Hooks/useNotification"
 
 
 const signalingServerUrl = "http://localhost:8000/"
@@ -12,6 +13,8 @@ and why this class is built the way it is.
 */
 const state = useClientStore.getState() //update state values to change UI upon changes
 const peerState = usePeersStore.getState()
+const notify = useNotification.getState().notify
+//notify(type, message) type == "success", "error", "update" <- for room updates.
 
 const ConnectionManager = class {
 
@@ -101,7 +104,7 @@ const ConnectionManager = class {
     async createRoom(roomName, userName){
 
         if(!roomName || roomName === ""){
-            //NotificationSystem.notify("Please provide a valid room name", "error")
+            notify("error", "Please provide a valid room name")
             return
         }
 
@@ -119,7 +122,7 @@ const ConnectionManager = class {
                 )
 
                 if(response.data.error){
-                    //NotificationSystem.notify(response.data.error, "error") <- this isnt implemented yet
+                    notify("error", response.data.error)
                     this.roomStatus = "disconnected"
                     state.setRoomStatus("disconnected")
                     state.setUsername("")
@@ -131,7 +134,7 @@ const ConnectionManager = class {
                 
                 this.roomKey = response.data.room_key //only host has access to this key
 
-                //NotificationSystem.notify(response.data.message, "success") <- this isnt implemented yet
+                notify("success", response.data.message)
                 this.roomStatus = "connected"
                 state.setRoomStatus("connected")
                 this.role = "host"
@@ -147,13 +150,13 @@ const ConnectionManager = class {
     async joinRoom(roomId, userName){
 
         if(!roomId || roomId === ""){
-            //NotificationSystem.notify("Please provide a valid room ID", "error") // <- this isnt implemented yet
+            notify("error", "Please provide a valid room ID")
             return
         }
 
         if(this.roomStatus === "disconnected"){
             this.roomStatus = "joining"
-            state.setStatus("joining")
+            state.setRoomStatus("joining")
             this.username = userName
             state.setUsername(userName)
             try {
@@ -164,7 +167,7 @@ const ConnectionManager = class {
                 })
 
                 if(response.data.error){
-                    //NotificationSystem.notify(response.data.error, "error") <- this isnt implemented yet
+                    notify("error", response.data.error)
                     this.roomStatus = "disconnected"
                     state.setRoomStatus("disconnected")
                     state.setUsername("")
@@ -176,7 +179,7 @@ const ConnectionManager = class {
                 state.setRoomId(this.roomId)
                 this.userId = response.data.user_id
 
-                //NotificationSystem.notify(response.data.message, "success")
+                notify("success", response.data.message)
                 this.roomStatus = "connected"
                 state.setRoomStatus("connected")
                 this.role = "guest"
@@ -198,7 +201,7 @@ const ConnectionManager = class {
     async leaveRoom(){
         if(this.roomStatus === "connected"){
             this.roomStatus = "leaving"
-            state.setStatus("leaving")
+            state.setRoomStatus("leaving")
             try {
                 const response = await this.signallingServerCall("leaveRoom", {
                     room_id: this.roomId,
@@ -206,15 +209,15 @@ const ConnectionManager = class {
                 })
 
                 if(response.data.error){
-                    //NotificationSystem.notify(response.data.error, "error") <- this isnt implemented yet
+                    notify("error", response.data.error)
                     this.roomStatus = "connected" // stay connected if leave fails
-                    state.setStatus("connected")
+                    state.setRoomStatus("connected")
                     return
                 }
 
-                //NotificationSystem.notify(response.data.message, "success") <- this isnt implemented yet
+                notify("success", response.data.message)
                 this.roomStatus = "disconnected"
-                state.setStatus("disconnected")
+                state.setRoomStatus("disconnected")
                 this.roomId = ""
                 state.setRoomId("")
                 this.userId = ""
@@ -241,7 +244,7 @@ const ConnectionManager = class {
                 const response = await this.signallingServerCall("getRoomUsers", {})
 
                 if(response.data.error){
-                    //NotificationSystem.notify(response.data.error, "error") // <- this isnt implemented yet
+                    notify("error", response.data.error)
                     return
                 }
 
@@ -252,7 +255,7 @@ const ConnectionManager = class {
             }
         }
         else {
-            //NotificationSystem.notify("You are not connected to a room", "error") // <- this isnt implemented yet
+            notify("error", "You are not connected to a room")
             return []
         }
     }
@@ -264,7 +267,6 @@ const ConnectionManager = class {
             const usersInRoom = await this.getServerRoomUsers() // array of users in the room
 
             if(!usersInRoom){
-                //NotificationSystem here
                 return
             }
             try {
@@ -289,12 +291,12 @@ const ConnectionManager = class {
                     console.log(this.peerConnections)
 
                     if(response.data.error){
-                        //NotificationSystem.notify(response.data.error, "error")
+                        notify("error", response.data.error)
                     }
                 }
             }
             catch (error){
-                //NotificationSystem.notify("Connection error", "error")
+                notify("error", "Connection error")
                 console.error("sendOffer error: " + error)
             }     
         }
@@ -316,7 +318,7 @@ const ConnectionManager = class {
                 const data = JSON.parse(event.data)
 
                 if(data.error){
-                    //NotificationSystem.notify(data.error, "error") // <- this isnt implemented yet
+                    notify("error", data.error)
                     return
                 }
 
@@ -345,7 +347,7 @@ const ConnectionManager = class {
 
                         if(!this.peerConnections[answerData.from_user_id]){
                             console.error("Peer answer failure")
-                            //NotificationSystem.notify(`Connection to another user failed.`, "info") // <- this isnt implemented yet
+                            notify("error", `Connection to another user failed.`)
                             break
                         }
 
@@ -376,7 +378,7 @@ const ConnectionManager = class {
                         break
                     case "host_reallocation":
                         const reallocationData = data.payload
-                        //NotificationSystem.notify(`Host has been reallocated to ${reallocationData.message}`, "info") // <- this isnt implemented yet
+                        notify("update", `Host has been reallocated to ${reallocationData.message}`)
                         if(this.userId === reallocationData.new_host_id){
                             this.role = "host"
                         }
@@ -389,7 +391,6 @@ const ConnectionManager = class {
                 }
             }
             socket.onclose = () => {
-                // more logging and error handling
                 console.log("WebSocket connection closed")
             }
         }
@@ -451,7 +452,7 @@ const ConnectionManager = class {
             case "getRoomUsers":
                 return axios.get(signalingServerUrl + "api/get-room-users/" + this.roomId + "/" + this.userId)
             default:
-                throw new Error("Unknown signalling server call type: " + type) //TODO: error notification
+                throw new Error("Unknown signalling server call type: " + type)
         }
     }
 }
