@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, desktopCapturer, session } = require('electron');
 const path = require('path');
-const { startListenForKeys } = require('./keyEventListener')
+const { startListenForKeys, updateKeyBinding } = require('./keyEventListener')
+const util = require("./util");
 
 let win;
 
@@ -70,6 +71,18 @@ ipcMain.handle('disable-focus', async () => {
 ipcMain.handle('close-app', async () => {
   app.quit()
 })
+
+ipcMain.handle("get-key-bindings", () => {
+    return util.getKeyBindings();
+});
+
+ipcMain.handle("set-key-binding", (event, action, key) => {
+    util.setKeyBinding(action, key);
+    if (action === "changeMode") {
+        updateKeyBinding(key);
+    }
+    return { success: true };
+});
 
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {

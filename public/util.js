@@ -14,7 +14,7 @@ class util {
         } catch (error) {
             // First launch: no settings file yet.
             if (error.code === "ENOENT") {
-                return { keyBindings: {} };
+                return { keyBindings: { changeMode: "F2" } };
             }
 
             throw error;
@@ -22,7 +22,8 @@ class util {
     }
 
     static getKeyBindings() {
-        return this.getSettings().keyBindings ?? {};
+        const bindings = this.getSettings().keyBindings ?? {};
+        return { ...bindings, changeMode: bindings.changeMode ?? "F2" };
     }
 
     static setKeyBinding(action, key) {

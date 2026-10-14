@@ -9,6 +9,7 @@ import styles from "./MainMenu.module.css"
 import RoomOptionsForm from "../Components/MainMenu/RoomOptionsForm"
 import connectionManager from "../Utils/ConnectionManager"
 import PeersScrollableMenu from "../Components/MainMenu/PeersScrollableMenu"
+import KeyBindSetting from "../Components/Settings/KeyBindSetting"
 
 //the menu that contains all the general information and room management
 const MainMenu = () => {
@@ -47,7 +48,9 @@ const MainMenu = () => {
                     tabSelected === "settings" ?
                         <section className={styles.settingsContainer}>
                             <h1>Settings</h1>
-                            <p>Settings will be implemented here in the future.</p>
+                            <div className={styles.settingsContent}>
+                                <KeyBindSetting></KeyBindSetting>
+                            </div>
                         </section>
                     :
                         <div className={styles.leftHalf}>

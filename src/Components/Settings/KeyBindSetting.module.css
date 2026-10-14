@@ -1,2 +1,26 @@
 .container {
+    height: 18%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 5%;
+    gap: 5%;
+    font-size: 1.2rem;
+    margin-top: 5%;
+}
+
+.keyBind {
+    width: 3.5rem;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    aspect-ratio: 1/1;
+    border: 2px solid #7a7e8d;
+    color: #7a7e8d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
 }

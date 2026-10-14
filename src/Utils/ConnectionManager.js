@@ -93,6 +93,17 @@ const ConnectionManager = class {
             this.localStream = this.canvasStreamElement.canvas.captureStream(10) // 10 FPS
             updateCanvas()
 
+            const newVideoTrack = this.localStream.getVideoTracks()[0]
+            for (const connection of Object.values(this.peerConnections)) {
+                const sender = connection.peerConnection
+                    .getSenders()
+                    .find(sender => sender.track?.kind === "video")
+
+                if (sender) {
+                    await sender.replaceTrack(newVideoTrack)
+                }
+            }
+
             state.setStartedStream(true)
             state.setLocalStream(this.localStream)
         }catch (error) {
@@ -378,7 +389,7 @@ const ConnectionManager = class {
                         break
                     case "host_reallocation":
                         const reallocationData = data.payload
-                        notify("update", `Host has been reallocated to ${reallocationData.message}`)
+                        notify("update", `Host has been changed to ${this.peerConnections[reallocationData.new_host_id].username}`)
                         if(this.userId === reallocationData.new_host_id){
                             this.role = "host"
                         }
