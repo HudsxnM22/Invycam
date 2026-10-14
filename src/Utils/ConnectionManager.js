@@ -5,7 +5,7 @@ import usePeersStore from "../Hooks/usePeerStore"
 import useNotification from "../Hooks/useNotification"
 
 
-const signalingServerUrl = "http://192.168.1.190:8000/"
+const signalingServerUrl = "http://173.72.145.131:8000/"
 
 /*
 read the README.md for more information on how to use this class.
@@ -95,13 +95,7 @@ const ConnectionManager = class {
 
             const newVideoTrack = this.localStream.getVideoTracks()[0]
             for (const connection of Object.values(this.peerConnections)) {
-                const sender = connection.peerConnection
-                    .getSenders()
-                    .find(sender => sender.track?.kind === "video")
-
-                if (sender) {
-                    await sender.replaceTrack(newVideoTrack)
-                }
+                await connection.setLocalVideoTrack(newVideoTrack)
             }
 
             state.setStartedStream(true)
@@ -282,6 +276,7 @@ const ConnectionManager = class {
             }
             try {
                 for(let user of usersInRoom) {
+                    //eventually need to reject requests on the backend if the user is not in the room.
                     if(user.user_id === this.userId){
                         continue
                     }
@@ -320,7 +315,7 @@ const ConnectionManager = class {
         }
 
         try {
-            const url = "ws://192.168.1.190:8000/ws/socket/" + this.userId
+            const url = "ws://173.72.145.131:8000/ws/socket/" + this.userId
             const socket = new WebSocket(url)
             socket.onopen = () => {
                 console.log("WebSocket connection established")

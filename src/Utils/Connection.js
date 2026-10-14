@@ -4,6 +4,7 @@ const Connection = class {
 
     localStream = null //screen recording - only video no audio single track object from local peer
     remoteStream = null
+    videoTransceiver = null
 
     localSdp = {}
     localIce = []
@@ -33,15 +34,17 @@ const Connection = class {
     constructor(peerId){
         this.peerId = peerId
         this.peerConnection.addEventListener('track', async (event) => {
-            this.remoteStream = event.streams[0]
+            this.remoteStream = event.streams[0] || new MediaStream([event.track])
         })
     }
 
     async createOffer(localStream, fromUserId, toUserId){
 
-        this.localStream = localStream.getTracks()[0]
-
-        this.peerConnection.addTrack(this.localStream, localStream)
+        // Negotiate video now, even if there is no captured track to send yet.
+        this.videoTransceiver = this.peerConnection.addTransceiver("video", {
+            direction: "sendrecv"
+        })
+        await this.setLocalVideoTrack(localStream?.getVideoTracks()[0] ?? null)
 
         this.localSdp = await this.peerConnection.createOffer()
         await this.peerConnection.setLocalDescription(this.localSdp)
@@ -80,22 +83,27 @@ const Connection = class {
     //localstream == MediaStream
     async createAnswer(offerData, localStream, fromUserId, targetId){
 
-        this.localStream = localStream.getTracks()[0]
-
-        this.peerConnection.addTrack(this.localStream, localStream) //add local stream to the peer connection
-        
         //set remote description
         await this.peerConnection.setRemoteDescription({
             type: "offer",
             sdp: offerData.sdp
         })
+        
+        this.videoTransceiver = this.peerConnection.getTransceivers().find(transceiver => transceiver.receiver.track.kind === "video")
+
+        if (!this.videoTransceiver) {
+            throw new Error("The offer does not include a video transceiver")
+        }
+        this.videoTransceiver.direction = "sendrecv"
+        await this.setLocalVideoTrack(localStream?.getVideoTracks()[0] ?? null)
+
         for(let remoteCandidate of offerData.ice_candidates){
             this.peerConnection.addIceCandidate(remoteCandidate)
         }
         
         //create answer based on remote description set above
         this.localSdp = await this.peerConnection.createAnswer()
-        this.peerConnection.setLocalDescription(this.localSdp)
+        await this.peerConnection.setLocalDescription(this.localSdp)
         this.localIce = await this.gatherIceCandidates()
 
         console.log(this.peerId + " " + this.peerConnection.signalingState)
@@ -109,6 +117,13 @@ const Connection = class {
                 sdp:  this.peerConnection.localDescription.sdp,
                 ice_candidates: this.localIce
             }
+        }
+    }
+
+    async setLocalVideoTrack(track) {
+        this.localStream = track
+        if (this.videoTransceiver) {
+            await this.videoTransceiver.sender.replaceTrack(track)
         }
     }
 
@@ -166,7 +181,8 @@ const Connection = class {
         }
         this.localStream = null
         this.remoteStream = null
-        console.log("closed conneciton with: " + this.peerId)
+        this.videoTransceiver = null
+        console.log("closed connection with: " + this.peerId)
     }
 }
 export default Connection;
