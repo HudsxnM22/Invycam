@@ -2,6 +2,7 @@ import axios from "axios"
 import Connection from "./Connection"
 import useClientStore from "../Hooks/useClientStore"
 import usePeersStore from "../Hooks/usePeerStore"
+import useModeStore from "../Hooks/useModeStore"
 import useNotification from "../Hooks/useNotification"
 
 
@@ -231,6 +232,7 @@ const ConnectionManager = class {
 
                 // close all peer connections
                 peerState.updatePeers({})
+                useModeStore.setState({ onScreenPeers: {} })
                 for(let peerId in this.peerConnections){
                     this.peerConnections[peerId].closeConnection()
                     delete this.peerConnections[peerId]
@@ -371,6 +373,7 @@ const ConnectionManager = class {
 
                     case "disconnect":
                         const disconnectData = data.payload
+                        useModeStore.getState().removeOnScreenPeer({ peerId: disconnectData.user_id })
                         if(this.peerConnections[disconnectData.user_id]){
                             console.log(this.peerConnections)
                             this.peerConnections[disconnectData.user_id].closeConnection()
@@ -384,7 +387,7 @@ const ConnectionManager = class {
                         break
                     case "host_reallocation":
                         const reallocationData = data.payload
-                        notify("update", `Host has been changed to ${this.peerConnections[reallocationData.new_host_id].username}`)
+                        notify("update", `Host has been changed to ${reallocationData.username}.`)
                         if(this.userId === reallocationData.new_host_id){
                             this.role = "host"
                         }
