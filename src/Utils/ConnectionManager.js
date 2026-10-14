@@ -309,7 +309,7 @@ const ConnectionManager = class {
         }
 
         try {
-            const url = "ws://localhost:8000/ws/socket/" + this.userId
+            const url = "ws://192.168.1.190:8000/ws/socket/" + this.userId
             const socket = new WebSocket(url)
             socket.onopen = () => {
                 console.log("WebSocket connection established")
@@ -383,7 +383,9 @@ const ConnectionManager = class {
                             this.role = "host"
                         }
                         this.roomKey = reallocationData.room_key //only host has access to this key. for kicking users and other host actions
-                        this.peerConnections[reallocationData.new_host_id].isHost = true
+                        if(this.peerConnections[reallocationData.new_host_id]){
+                            this.peerConnections[reallocationData.new_host_id].isHost = true
+                        }
                         peerState.updatePeers(this.peerConnections)
                         state.setRole(this.role)
                         
