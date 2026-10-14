@@ -29,6 +29,7 @@ const TopBar = () => {
 
     return (
         <span className={styles.topbarContainer}>
+            <span className={styles.title}>Invycam</span>
             <button className={styles.topbarButtonContainer} name="bug-report" onClick={() => 
                 {
                     setRoomStatus(roomStatus === "connected" ? "disconnected" : "connected")
@@ -48,20 +49,17 @@ const TopBar = () => {
 
                     updatePeers(peers)
                 }}> 
-                  <svg 
-                    className={styles.bugIcon}
-                    viewBox="0 0 16 16" 
-                    fill="none" 
+                  <svg
+                    className={styles.gearIcon}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     xmlns="http://www.w3.org/2000/svg"
                 >
-                    <path 
-                    d="M7 0V1.60002C7.32311 1.53443 7.65753 1.5 8 1.5C8.34247 1.5 8.67689 1.53443 9 1.60002V0H11V2.49963C11.8265 3.12041 12.4543 3.99134 12.7711 5H3.2289C3.5457 3.99134 4.17354 3.12041 5 2.49963V0H7Z" 
-                    
-                    />
-                    <path 
-                    d="M0 7V9H3V10.4957L0.225279 11.2885L0.774721 13.2115L3.23189 12.5095C3.87194 14.5331 5.76467 16 8 16C10.2353 16 12.1281 14.5331 12.7681 12.5095L15.2253 13.2115L15.7747 11.2885L13 10.4957V9H16V7H9V12H7V7H0Z" 
-                    
-                    />
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 1.72l-.12.88a2 2 0 0 1-1.18 1.52l-.2.09a2 2 0 0 1-1.9-.18l-.71-.54a2 2 0 0 0-2.63.7l-.22.38a2 2 0 0 0 .63 2.65l.71.54a2 2 0 0 1 .72 1.76v.22a2 2 0 0 1-.8 1.76l-.71.54a2 2 0 0 0-.63 2.65l.22.38a2 2 0 0 0 2.63.7l.71-.54a2 2 0 0 1 1.9-.18l.2.09a2 2 0 0 1 1.18 1.52l.12.88A2 2 0 0 0 11.78 22h.44a2 2 0 0 0 2-1.72l.12-.88a2 2 0 0 1 1.18-1.52l.2-.09a2 2 0 0 1 1.9.18l.71.54a2 2 0 0 0 2.63-.7l.22-.39a2 2 0 0 0-.63-2.65l-.71-.53a2 2 0 0 1-.72-1.76v-.22a2 2 0 0 1 .72-1.76l.71-.54a2 2 0 0 0 .63-2.65l-.22-.38a2 2 0 0 0-2.63-.7l-.71.54a2 2 0 0 1-1.9.18l-.2-.09a2 2 0 0 1-1.18-1.52l-.12-.88A2 2 0 0 0 12.22 2Z" />
+                    <circle cx="12" cy="12" r="3" />
                 </svg>
             </button>
 
