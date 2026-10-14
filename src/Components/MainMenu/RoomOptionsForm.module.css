@@ -1,23 +1,139 @@
-.roomOptionsFormMenu { width: 100%; padding-bottom: 18px; border-bottom: 1px solid #2b323b; }
-.title { margin: 0 0 14px; color: #a5b1bf; font-size: 10px; font-weight: 650; letter-spacing: 1.4px; text-transform: uppercase; }
-.formContainer, .form { display: flex; flex-direction: column; gap: 12px; }
-.formControl { position: relative; display: flex; flex-direction: column-reverse; gap: 6px; min-width: 0; }
-.formControl label { color: #9ca8b6; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
-.formControl label span { white-space: pre-wrap; }
-.formControl input { width: 100%; min-height: 36px; border: 1px solid #333d49; border-radius: 6px; background: #0f1318; color: #edf2f7; padding: 8px 10px; transition: border-color 150ms; }
-.formControl input:hover { border-color: #52616f; }
-.formControl input:focus { border-color: #79d8bb; }
-.buttonHolder { display: flex; gap: 8px; margin-top: 2px; }
-.submitButton, .leaveButton { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; flex: 1; padding: 8px 12px; border: 1px solid #35414c; border-radius: 6px; background: #202730; color: #e9edf2; cursor: pointer; font-weight: 550 !important; }
+.roomOptionsFormMenu {
+    width: 100%;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #2b323b;
+}
+
+.title {
+    margin: 0 0 14px;
+    color: #a5b1bf;
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.formContainer, .form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.formControl {
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+    min-width: 0;
+}
+
+.formControl label {
+    color: #9ca8b6;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.formControl label span {
+    white-space: pre-wrap;
+}
+
+.formControl input {
+    width: 100%;
+    min-height: 36px;
+    border: 1px solid #333d49;
+    border-radius: 6px;
+    background: #0f1318;
+    color: #edf2f7;
+    padding: 8px 10px;
+    transition: border-color 150ms;
+}
+
+.formControl input:hover {
+    border-color: #52616f;
+}
+
+.formControl input:focus {
+    border-color: #79d8bb;
+}
+
+.buttonHolder {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.submitButton, .leaveButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #35414c;
+    border-radius: 6px;
+    background: #202730;
+    color: #e9edf2;
+    cursor: pointer;
+    font-weight: 550 !important;
+}
+
 /* Override the legacy inline green background and glow without changing JSX. */
-.submitButton[type='submit'] { background: #29624f !important; box-shadow: none !important; border-color: #377d65; }
-.submitButton:hover, .leaveButton:hover { background: #303c48; }
-.submitButton[type='submit']:hover { background: #347c63 !important; }
-.roomIcon { width: 16px; height: 16px; }
-.loadingSection { min-height: 100px; display: grid; place-items: center; }
-.connectionManagerContainer { display: flex; flex-direction: column; gap: 12px; }
-.connectionManagerContainer .form { gap: 8px; padding: 12px; background: #0f1318; border: 1px solid #2b323b; border-radius: 6px; }
-.connectionManagerContainer label { font-size: 12px; color: #c4ced8; }
-.leaveButtonHolder { display: flex; }
-.leaveButton { color: #efb2b7; }
-.leaveButton:hover { background: #442a31; border-color: #7a454e; }
+
+.submitButton[type='submit'] {
+    background: #29624f !important;
+    box-shadow: none !important;
+    border-color: #377d65;
+}
+
+.submitButton:hover, .leaveButton:hover {
+    background: #303c48;
+}
+
+.submitButton[type='submit']:hover {
+    background: #347c63 !important;
+}
+
+.roomIcon {
+    width: 16px;
+    height: 16px;
+}
+
+.loadingSection {
+    min-height: 100px;
+    display: grid;
+    place-items: center;
+}
+
+.connectionManagerContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.connectionManagerContainer .form {
+    gap: 8px;
+    padding: 12px;
+    background: #0f1318;
+    border: 1px solid #2b323b;
+    border-radius: 6px;
+}
+
+.connectionManagerContainer label {
+    font-size: 12px;
+    color: #c4ced8;
+}
+
+.leaveButtonHolder {
+    display: flex;
+}
+
+.leaveButton {
+    color: #efb2b7;
+}
+
+.leaveButton:hover {
+    background: #442a31;
+    border-color: #7a454e;
+}

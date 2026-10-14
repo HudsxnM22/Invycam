@@ -7,7 +7,7 @@ import Connection from "../Utils/Connection"
 import useNotification from "../Hooks/useNotification"
 
 //top bar of menu contains the X and - to minimize and close the application
-const TopBar = () => {
+const TopBar = ({ tabSelected, setTabSelected }) => {
     const changeMode = useModeStore((state) => state.changeMode)
     const updatePeers = usePeersStore((state) => state.updatePeers)
     const localStream = useClientStore((state) => state.localStream)
@@ -26,29 +26,18 @@ const TopBar = () => {
         window.ipc.closeApp()
     }
 
+    const settingsHandler = () => {
+        if(tabSelected === "settings"){
+            setTabSelected("mainMenu")
+        } else {
+            setTabSelected("settings")
+        }
+    }
 
     return (
         <span className={styles.topbarContainer}>
             <span className={styles.title}>Invycam</span>
-            <button className={styles.topbarButtonContainer} name="bug-report" onClick={() => 
-                {
-                    setRoomStatus(roomStatus === "connected" ? "disconnected" : "connected")
-                    
-                    //TODO delete me
-
-                    const peers = {
-                            "hj2k3": new Connection("hj2k3"),
-                            "hj324": new Connection("hj324")
-                        }
-                        
-                        peers.hj2k3.username = "Anonym"
-                        peers.hj324.username = "bobby"
-
-                        peers.hj2k3.remoteStream = localStream
-                        peers.hj324.remoteStream = localStream
-
-                    updatePeers(peers)
-                }}> 
+            <button className={styles.topbarButtonContainer} name="settings" onClick={settingsHandler}> 
                   <svg
                     className={styles.gearIcon}
                     viewBox="0 0 24 24"

@@ -1,6 +1,45 @@
-.topbarContainer { display: flex; align-items: center; flex-shrink: 0; min-height: 48px; padding: 8px 12px 8px 16px; gap: 4px; border-bottom: 1px solid #2b323b; }
-.title { margin-right: auto; color: #edf4f1; font-size: 14px; font-weight: 700; letter-spacing: -.3px; }
-.topbarButtonContainer { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 0; border-radius: 5px; background: transparent; cursor: pointer; padding: 6px; }
-.topbarButtonContainer:hover { background: #2b333e; }
-.topbarButtonContainer[name='exit']:hover { background: #75363e; }
-.gearIcon, .minimizeIcon, .closeIcon { width: 15px; height: 15px; stroke: #aab5c2; fill: none; }
+.topbarContainer {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 48px;
+    padding: 8px 12px 8px 16px;
+    gap: 4px;
+    border-bottom: 1px solid #2b323b;
+}
+
+.title {
+    margin-right: auto;
+    color: #edf4f1;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+}
+
+.topbarButtonContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.topbarButtonContainer:hover {
+    background: #2b333e;
+}
+
+.topbarButtonContainer[name='exit']:hover {
+    background: #75363e;
+}
+
+.gearIcon, .minimizeIcon, .closeIcon {
+    width: 15px;
+    height: 15px;
+    stroke: #aab5c2;
+    fill: none;
+}

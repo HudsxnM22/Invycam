@@ -1,6 +1,41 @@
-.peersScrollableMenuContainer { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; width: 100%; }
-.connectedPeersTitle { flex: 0 0 100%; margin: 0; color: #929daa; font-size: 10px; line-height: 1.6; font-weight: 650; letter-spacing: 1.2px; text-transform: uppercase; text-align: left; }
+.peersScrollableMenuContainer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+}
+
+.connectedPeersTitle {
+    flex: 0 0 100%;
+    margin: 0;
+    color: #929daa;
+    font-size: 10px;
+    line-height: 1.6;
+    font-weight: 650;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-align: left;
+}
+
 /* A horizontal strip keeps participant previews compact as the room grows. */
-.peersScrollableMenuContainer:has(> div) { display: grid; grid-auto-flow: column; grid-auto-columns: 168px; justify-content: start !important; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; scrollbar-color: #46515e transparent; }
-.peersScrollableMenuContainer:has(> div) .connectedPeersTitle { grid-row: 1; grid-column: 1 / -1; }
-.peersScrollableMenuContainer > div { grid-row: 2; }
+
+.peersScrollableMenuContainer:has(> div) {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 168px;
+    justify-content: start !important;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #46515e transparent;
+}
+
+.peersScrollableMenuContainer:has(> div) .connectedPeersTitle {
+    grid-row: 1;
+    grid-column: 1 / -1;
+}
+
+.peersScrollableMenuContainer > div {
+    grid-row: 2;
+}

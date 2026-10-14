@@ -1,18 +1,120 @@
-.peerCardContainer { width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-.usernameOverlay { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.peerName { margin: 0; color: #dce4ed; font-size: 12px; font-weight: 550; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.usernameOverlay .SVGs { width: 14px; height: 14px; flex-shrink: 0; }
-.usernameOverlay .SVGs path { fill: #79d8bb; }
-.peerVideoContainer { position: relative; width: 100%; aspect-ratio: 16 / 9; border: 1px solid #333d49; border-radius: 6px; overflow: hidden; background: #090c10; }
-.peerVideo { width: 100%; height: 100%; object-fit: contain; display: block; }
-.loadingBar { position: absolute; inset: 0; display: grid; place-items: center; }
-.errorText { position: absolute; inset: 10px 0 auto; margin: 0; color: #c5a7ab; font-size: 11px; text-align: center; }
-.peerControlsOverlay { position: absolute; inset: auto 0 0; height: 40px; background: linear-gradient(transparent, #090c10ee); pointer-events: none; }
-.peerControlsContainer { position: absolute; inset: auto 5px 5px; display: flex; align-items: center; gap: 4px; }
-.peerControlButton { display: grid; place-items: center; padding: 5px; width: 26px; height: 26px; background: #1e2730e8; border: 1px solid #3a4652; border-radius: 4px; cursor: pointer; }
-.peerControlButton:nth-child(2) { margin-left: auto; }
-.peerControlButton:hover { background: #3c5357; }
-.SVGs { width: 16px; height: 16px; }
-.SVGs path { fill: #dbe4ed; }
-.peerControlButton:first-child:hover .SVGs path { fill: #ef9ba5; }
-.peerControlButton:last-child:hover .SVGs path { fill: #79d8bb; }
+.peerCardContainer {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.usernameOverlay {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.peerName {
+    margin: 0;
+    color: #dce4ed;
+    font-size: 12px;
+    font-weight: 550;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.usernameOverlay .SVGs {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.usernameOverlay .SVGs path {
+    fill: #79d8bb;
+}
+
+.peerVideoContainer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid #333d49;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #090c10;
+}
+
+.peerVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.loadingBar {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+}
+
+.errorText {
+    position: absolute;
+    inset: 10px 0 auto;
+    margin: 0;
+    color: #c5a7ab;
+    font-size: 11px;
+    text-align: center;
+}
+
+.peerControlsOverlay {
+    position: absolute;
+    inset: auto 0 0;
+    height: 40px;
+    background: linear-gradient(transparent, #090c10ee);
+    pointer-events: none;
+}
+
+.peerControlsContainer {
+    position: absolute;
+    inset: auto 5px 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.peerControlButton {
+    display: grid;
+    place-items: center;
+    padding: 5px;
+    width: 26px;
+    height: 26px;
+    background: #1e2730e8;
+    border: 1px solid #3a4652;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.peerControlButton:nth-child(2) {
+    margin-left: auto;
+}
+
+.peerControlButton:hover {
+    background: #3c5357;
+}
+
+.SVGs {
+    width: 16px;
+    height: 16px;
+}
+
+.SVGs path {
+    fill: #dbe4ed;
+}
+
+.peerControlButton:first-child:hover .SVGs path {
+    fill: #ef9ba5;
+}
+
+.peerControlButton:last-child:hover .SVGs path {
+    fill: #79d8bb;
+}

@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");
+const { getKeyBindings, setKeyBinding } = require("./util");
 
 contextBridge.exposeInMainWorld("ipc", {
     closeApp: () => ipcRenderer.invoke("close-app"),
@@ -9,5 +10,7 @@ contextBridge.exposeInMainWorld("ipc", {
             ipcRenderer.invoke("enable-focus")
             callbackEvent()
         })
-    }
+    },
+    getKeyBindings: () => getKeyBindings(),
+    setKeyBinding: (action, key) => setKeyBinding(action, key)
 })

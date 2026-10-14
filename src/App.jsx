@@ -134,7 +134,7 @@ function App() {
         <MainMenu></MainMenu>
       : mode === "edit" ?
         <Edit></Edit>
-      :
+      : 
         <Operation></Operation>
       }
     </>

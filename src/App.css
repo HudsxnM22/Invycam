@@ -1,10 +1,18 @@
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('./assets/fonts/PlusJakartaSans-Variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
 :root {
   --primary-color: rgba(59, 64, 160, 0.3);
   --secondary-color: rgba(165, 165, 165, 0.3);
   --background-color: linear-gradient(145deg, #354662e9, #3c4451e9);
   --text-color: #ffffff;
   --secondary-text-color: #000000;
-  --font-family: 'Ubuntu', sans-serif;
+  --font-family: 'Plus Jakarta Sans', sans-serif;
   --edit-background-color: rgba(62, 62, 62, 0.505);
 
   background-color: var(--edit-background-color);
@@ -43,4 +51,3 @@ body {
   color: white;
   opacity: 0.5;
 }
-
