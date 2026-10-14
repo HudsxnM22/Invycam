@@ -1,6 +1,6 @@
 const { uIOhook, UiohookKey } = require('uiohook-napi')
 
-let keyToPress = ""//hard ahh part...
+let keyToPress = ""
 
 function startListenForKeys(win){
     uIOhook.on('keydown', (e) => {

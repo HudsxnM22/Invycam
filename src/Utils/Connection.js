@@ -32,9 +32,9 @@ const Connection = class {
 
     constructor(peerId){
         this.peerId = peerId
-        //this.peerConnection.addEventListener('track', async (event) => {
-        //    this.remoteStream = event.streams[0]
-        //})
+        this.peerConnection.addEventListener('track', async (event) => {
+            this.remoteStream = event.streams[0]
+        })
     }
 
     async createOffer(localStream, fromUserId, toUserId){

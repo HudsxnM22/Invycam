@@ -5,7 +5,7 @@ import usePeersStore from "../Hooks/usePeerStore"
 import useNotification from "../Hooks/useNotification"
 
 
-const signalingServerUrl = "http://localhost:8000/"
+const signalingServerUrl = "http://192.168.1.190:8000/"
 
 /*
 read the README.md for more information on how to use this class.
