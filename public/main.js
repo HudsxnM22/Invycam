@@ -10,7 +10,7 @@ function createWindow() {
   win = new BrowserWindow({
     show: false,
     transparent: true,
-    frame: false, //gotta make an X button
+    frame: false,
     fullscreen: true,
     minimizable: false,
     alwaysOnTop: true,
@@ -35,6 +35,8 @@ function createWindow() {
     win.setFocusable(true)
     win.setIgnoreMouseEvents(false)
     win.show()
+    win.setAlwaysOnTop(true, 'screen-saver')
+    win.moveTop()
     win.focus()
     win.webContents.focus()
   })
@@ -66,6 +68,8 @@ ipcMain.handle('enable-focus', async () => {
   win.setFocusable(true)
   win.setIgnoreMouseEvents(false, {forward: false})
   win.show()
+  win.setAlwaysOnTop(true, 'screen-saver')
+  win.moveTop()
   win.focus()
   win.webContents.focus()
 
@@ -77,6 +81,8 @@ ipcMain.handle('disable-focus', async () => {
     return {success: false}
   win.setFocusable(false)
   win.setIgnoreMouseEvents(true, {forward: true})
+  win.setAlwaysOnTop(true, 'screen-saver')
+  win.moveTop()
 
   return {success: true}
 })
