@@ -5,10 +5,13 @@ contextBridge.exposeInMainWorld("ipc", {
     enterOperationMode: () => ipcRenderer.invoke("disable-focus"),
     exitOperationMode: () => ipcRenderer.invoke("enable-focus"),
     openMenu: (callbackEvent) => {
-        ipcRenderer.on('open-menu', () => {
-            ipcRenderer.invoke("enable-focus")
-            callbackEvent()
-        })
+        const handler = () => callbackEvent();
+
+        ipcRenderer.on("open-menu", handler);
+
+        return () => {
+            ipcRenderer.removeListener("open-menu", handler);
+        };
     },
     getKeyBindings: () => ipcRenderer.invoke("get-key-bindings"),
     setKeyBinding: (action, key) => ipcRenderer.invoke("set-key-binding", action, key)

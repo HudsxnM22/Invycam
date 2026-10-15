@@ -120,10 +120,25 @@ function App() {
   //listens for key press to open menu... then updates mode to menu too
   //TODO make so it doesnt constantly rerender
   useEffect(() => {
-    window.ipc.openMenu(() => {
-      setMode("menu")
-    })
-  }, [])
+      const unsubscribe = window.ipc.openMenu(() => {
+          const current = useModeStore.getState();
+
+          const nextMode = current.recordSelectMode
+              ? "menu"
+              : current.mode === "menu" ? "operation" : "menu";
+
+          current.setRecordSelectMode(false);
+          current.changeMode(nextMode);
+
+          if (nextMode === "operation") {
+              window.ipc.enterOperationMode();
+          } else {
+              window.ipc.exitOperationMode();
+          }
+      });
+
+      return unsubscribe;
+  }, []);
 
   return (
     <>

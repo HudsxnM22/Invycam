@@ -8,6 +8,7 @@ let win;
 function createWindow() {
   // Create the browser window
   win = new BrowserWindow({
+    show: false,
     transparent: true,
     frame: false, //gotta make an X button
     fullscreen: true,
@@ -28,6 +29,15 @@ function createWindow() {
       ]
     }
   });
+
+  // Show and activate the window only once its first frame is ready.
+  win.once('ready-to-show', () => {
+    win.setFocusable(true)
+    win.setIgnoreMouseEvents(false)
+    win.show()
+    win.focus()
+    win.webContents.focus()
+  })
 
   //for screen recording
   session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
@@ -51,16 +61,19 @@ function createWindow() {
 }
 
 ipcMain.handle('enable-focus', async () => {
-  if(win.isDestroyed() || !win)
+  if(!win || win.isDestroyed())
     return {success: false}
   win.setFocusable(true)
   win.setIgnoreMouseEvents(false, {forward: false})
+  win.show()
+  win.focus()
+  win.webContents.focus()
 
   return {success: true}
 })
 
 ipcMain.handle('disable-focus', async () => {
-  if(win.isDestroyed() || !win)
+  if(!win || win.isDestroyed())
     return {success: false}
   win.setFocusable(false)
   win.setIgnoreMouseEvents(true, {forward: true})
