@@ -8,6 +8,19 @@ import { TailChase } from 'ldrs/react'
 import 'ldrs/react/TailChase.css'
 import { useForm, SubmitHandler } from 'react-hook-form'
 
+//greets the logged in user, revealing their username letter by letter with a green shimmer from left to right
+const WelcomeBanner = ({ username }) => (
+    <h3 className={styles.welcome} aria-label={`Welcome ${username}!`}>
+        <span aria-hidden="true">Welcome </span>
+        <span className={styles.usernameReveal} key={username} aria-hidden="true">
+            {[...username].map((letter, i) => (
+                <span key={i} style={{ "--i": i }}>{letter}</span>
+            ))}
+        </span>
+        <span className={styles.welcomeBang} aria-hidden="true" style={{ "--i": username.length }}>!</span>
+    </h3>
+)
+
 const RoomOptionsForm = () => {
     const [tab, setTab] = useState("join")
     const connectionStatus = useClientStore((state) => state.roomStatus)
@@ -22,10 +35,10 @@ const RoomOptionsForm = () => {
 
     const onSubmit = (data) => {
         if(tab === "join"){
-            ConnectionManager.joinRoom(data.roomId, data.username)
+            ConnectionManager.joinRoom(data.roomId)
         }
         if(tab == "create"){
-            ConnectionManager.createRoom(data.roomName, data.username)
+            ConnectionManager.createRoom(data.roomName)
         }
     }
 
@@ -47,6 +60,7 @@ const RoomOptionsForm = () => {
 
     return(
         <section className={styles.roomOptionsFormMenu}>
+            {username && <WelcomeBanner username={username} />}
             <h4 className={styles.title}>
                 {tab === "join" && connectionStatus === "disconnected" ? 
                 "Join Room" 
@@ -74,18 +88,6 @@ const RoomOptionsForm = () => {
                             </label>
                         </div>
 
-                        <div className={styles.formControl}>
-                            <input {...register("username", {
-                                required: true,
-                                minLength: 2,
-                                maxLength: 10,
-                            })
-                                
-                            } type="text" name="username" required />
-                            <label>
-                                <span>U</span><span>s</span><span>e</span><span>r</span><span>n</span><span>a</span><span>m</span><span>e</span><span>:</span>
-                            </label>
-                        </div>
                         <section className={styles.buttonHolder}>
                             <button 
                             className={styles.submitButton} 
@@ -125,18 +127,6 @@ const RoomOptionsForm = () => {
                             </label>
                         </div>
 
-                        <div className={styles.formControl}>
-                            <input {...register("username", {
-                                required: true,
-                                minLength: 2,
-                                maxLength: 10,
-                            })
-
-                            } type="text" name="username" required />
-                            <label>
-                                <span>U</span><span>s</span><span>e</span><span>r</span><span>n</span><span>a</span><span>m</span><span>e</span><span>:</span>
-                            </label>
-                        </div>
                         <section className={styles.buttonHolder}>
                             <button className={styles.submitButton} type="button" onClick={(e) => {
                                 setTab("join")

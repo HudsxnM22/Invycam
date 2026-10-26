@@ -10,6 +10,7 @@ import RoomOptionsForm from "../Components/MainMenu/RoomOptionsForm"
 import connectionManager from "../Utils/ConnectionManager"
 import PeersScrollableMenu from "../Components/MainMenu/PeersScrollableMenu"
 import KeyBindSetting from "../Components/Settings/KeyBindSetting"
+import LoginPage from "../Components/MainMenu/LoginPage"
 
 //the menu that contains all the general information and room management
 const MainMenu = () => {
@@ -22,6 +23,7 @@ const MainMenu = () => {
     const roomStatus = useClientStore((state) => state.roomStatus)
     const localStream = useClientStore((state) => state.localStream)
     const startedStream = useClientStore((state) => state.startedStream)
+    const isLoggedIn = useClientStore((state) => state.loggedIn)
 
     //Settings screen state and other tabs can be added here in the future.
     const [tabSelected, setTabSelected] = useState("mainMenu")
@@ -44,33 +46,39 @@ const MainMenu = () => {
         <div className={styles.mainMenuContainer} style={{visibility: recordSelectMode ? "hidden" : "visible"}}>
             <TopBar tabSelected={tabSelected} setTabSelected={setTabSelected} />
             <section className={styles.mainMenuContent}>
-                {
-                    tabSelected === "settings" ?
-                        <section className={styles.settingsContainer}>
-                            <h1>Settings</h1>
-                            <div className={styles.settingsContent}>
-                                <KeyBindSetting></KeyBindSetting>
-                            </div>
-                        </section>
-                    :
-                        <div className={styles.leftHalf}>
-                            <RoomOptionsForm></RoomOptionsForm>
-                            <section className={styles.streamPreviewContainer}>
-                                {!startedStream ? 
-                                    <button className={styles.startStreamButton} onClick={recordButtonHandler}>Start Capture</button>
-                                :
-                                    <button className={styles.changeStreamButton} onClick={recordButtonHandler}>Edit Capture</button>
-                                }
-                                <div className={styles.videoContainer} style={{position: startedStream ? "relative" : "absolute", visibility: startedStream ? "visible" : "hidden" }}>
-                                    <video ref={video} autoPlay className={styles.video}></video>
+                { !isLoggedIn ?
+                    <LoginPage></LoginPage>
+                :
+                    <>
+                        {
+                            tabSelected === "settings" ?
+                                <section className={styles.settingsContainer}>
+                                    <h1>Settings</h1>
+                                    <div className={styles.settingsContent}>
+                                        <KeyBindSetting></KeyBindSetting>
+                                    </div>
+                                </section>
+                            :
+                                <div className={styles.leftHalf}>
+                                    <RoomOptionsForm></RoomOptionsForm>
+                                    <section className={styles.streamPreviewContainer}>
+                                        {!startedStream ? 
+                                            <button className={styles.startStreamButton} onClick={recordButtonHandler}>Start Capture</button>
+                                        :
+                                            <button className={styles.changeStreamButton} onClick={recordButtonHandler}>Edit Capture</button>
+                                        }
+                                        <div className={styles.videoContainer} style={{position: startedStream ? "relative" : "absolute", visibility: startedStream ? "visible" : "hidden" }}>
+                                            <video ref={video} autoPlay className={styles.video}></video>
+                                        </div>
+                                    </section>
                                 </div>
-                            </section>
-                        </div>
+                        }
+                            
+                        <section className={styles.rightHalf}>
+                            <PeersScrollableMenu></PeersScrollableMenu>
+                        </section>
+                    </>
                 }
-                    
-                    <section className={styles.rightHalf}>
-                        <PeersScrollableMenu></PeersScrollableMenu>
-                    </section>
             </section>
         </div>
     )

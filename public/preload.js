@@ -14,5 +14,8 @@ contextBridge.exposeInMainWorld("ipc", {
         };
     },
     getKeyBindings: () => ipcRenderer.invoke("get-key-bindings"),
-    setKeyBinding: (action, key) => ipcRenderer.invoke("set-key-binding", action, key)
+    setKeyBinding: (action, key) => ipcRenderer.invoke("set-key-binding", action, key),
+    saveSecurityToken: (token) => ipcRenderer.invoke("save-security-token", token),
+    getSecurityToken: () => ipcRenderer.invoke("get-security-token"),
+    clearSecurityToken: () => ipcRenderer.invoke("clear-security-token"),
 })

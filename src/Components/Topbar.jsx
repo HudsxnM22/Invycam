@@ -5,6 +5,7 @@ import useClientStore from "../Hooks/useClientStore"
 import usePeersStore from "../Hooks/usePeerStore"
 import Connection from "../Utils/Connection"
 import useNotification from "../Hooks/useNotification"
+import { AuthService } from "../Utils/Auth"
 
 //top bar of menu contains the X and - to minimize and close the application
 const TopBar = ({ tabSelected, setTabSelected }) => {
@@ -16,6 +17,7 @@ const TopBar = ({ tabSelected, setTabSelected }) => {
     const roomStatus = useClientStore((state) => state.roomStatus)
     const setRoomStatus = useClientStore((state) => state.setRoomStatus)
     const notify = useNotification((state) => state.notify)
+    const loggedIn = useClientStore((state) => state.loggedIn)
 
     const minimizeHandler = () => {
         changeMode("operation") //unmount the menu.
@@ -34,10 +36,33 @@ const TopBar = ({ tabSelected, setTabSelected }) => {
         }
     }
 
+    const logoutHandler = async () => {
+        setTabSelected("mainMenu") //so logging back in doesn't land on settings
+        await AuthService.logout() //flips loggedIn, MainMenu swaps back to the login page
+        notify("success", "Logged out.")
+    }
+
     return (
         <span className={styles.topbarContainer}>
             <span className={styles.title}>Invycam</span>
-            <button className={styles.topbarButtonContainer} name="settings" onClick={settingsHandler}> 
+            {loggedIn &&
+                <button className={styles.topbarButtonContainer} name="logout" title="Log out" onClick={logoutHandler}>
+                    <svg
+                        className={styles.logoutIcon}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <path d="M16 17l5-5-5-5" />
+                        <path d="M21 12H9" />
+                    </svg>
+                </button>
+            }
+            <button className={styles.topbarButtonContainer} name="settings" onClick={settingsHandler}>
                   <svg
                     className={styles.gearIcon}
                     viewBox="0 0 24 24"

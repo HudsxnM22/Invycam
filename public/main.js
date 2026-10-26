@@ -103,6 +103,21 @@ ipcMain.handle("set-key-binding", (event, action, key) => {
     return { success: true };
 });
 
+ipcMain.handle("save-security-token", (event, token) => {
+    util.saveSecurityToken(token);
+    return { success: true };
+});
+
+ipcMain.handle("get-security-token", () => {
+    const token = util.getSecurityToken();
+    return { token };
+});
+
+ipcMain.handle("clear-security-token", () => {
+    util.clearSecurityToken();
+    return { success: true };
+});
+
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow()

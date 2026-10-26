@@ -137,3 +137,72 @@
     background: #442a31;
     border-color: #7a454e;
 }
+
+/* Username reveal: each letter fades up, flares green with a glow, then settles. --i staggers them left to right. */
+
+.welcome {
+    margin: 0 0 16px;
+    color: #e9edf2;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.usernameReveal {
+    white-space: pre;
+}
+
+/* the ! fades in right after the last letter of the username */
+.welcomeBang {
+    display: inline-block;
+    opacity: 0;
+    animation: bangReveal 300ms ease-out forwards;
+    animation-delay: calc(var(--i) * 55ms + 420ms);
+}
+
+@keyframes bangReveal {
+    to {
+        opacity: 1;
+    }
+}
+
+.usernameReveal span {
+    display: inline-block;
+    color: #79d8bb;
+    opacity: 0;
+    animation: letterReveal 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--i) * 55ms + 120ms);
+}
+
+@keyframes letterReveal {
+    0% {
+        opacity: 0;
+        color: #2b323b;
+        transform: translateY(4px);
+        filter: blur(3px);
+        text-shadow: none;
+    }
+    45% {
+        opacity: 1;
+        color: #b6ffd9;
+        transform: translateY(0);
+        filter: blur(0);
+        text-shadow: 0 0 6px #4dff9a, 0 0 14px #22c97a;
+    }
+    100% {
+        opacity: 1;
+        color: #79d8bb;
+        transform: translateY(0);
+        filter: blur(0);
+        text-shadow: 0 0 0 transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .usernameReveal span, .welcomeBang {
+        animation: none;
+        opacity: 1;
+    }
+}

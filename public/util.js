@@ -7,6 +7,10 @@ class util {
         return path.join(app.getPath("userData"), "settings.json");
     }
 
+    static getSecurityTokenPath() {
+        return path.join(app.getPath("userData"), "security_token.jwt");
+    }
+
     static getSettings() {
         try {
             const json = fs.readFileSync(this.getSettingsPath(), "utf8");
@@ -40,6 +44,39 @@ class util {
             JSON.stringify(settings, null, 4),
             "utf8"
         );
+    }
+
+    static getSecurityToken() {
+        try {
+            const jwt = fs.readFileSync(this.getSecurityTokenPath(), "utf8");
+            return jwt;
+        } catch (error) {
+            // First launch: no token file yet.
+            if (error.code === "ENOENT") {
+                return null;
+            }
+
+            throw error;
+        }
+    }
+
+    static saveSecurityToken(token) {
+        const filePath = this.getSecurityTokenPath();
+
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, token, "utf8");
+    }
+
+    static clearSecurityToken() {
+        const filePath = this.getSecurityTokenPath();
+
+        try {
+            fs.unlinkSync(filePath);
+        } catch (error) {
+            if (error.code !== "ENOENT") {
+                throw error;
+            }
+        }
     }
 }
 

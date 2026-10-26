@@ -4,6 +4,7 @@ import useClientStore from "../Hooks/useClientStore"
 import usePeersStore from "../Hooks/usePeerStore"
 import useModeStore from "../Hooks/useModeStore"
 import useNotification from "../Hooks/useNotification"
+import { AuthService } from "./Auth"
 
 
 const signalingServerUrl = "http://173.72.145.131:8000/"
@@ -28,6 +29,7 @@ const ConnectionManager = class {
     roomKey = "" 
     username = "Guest"
     canvasStreamElement = null
+
 
     constructor(){
     }
@@ -107,7 +109,8 @@ const ConnectionManager = class {
         }
     }
 
-    async createRoom(roomName, userName){
+    async createRoom(roomName){
+        const userName = useClientStore.getState().username
 
         if(!roomName || roomName === ""){
             notify("error", "Please provide a valid room name")
@@ -118,7 +121,6 @@ const ConnectionManager = class {
             this.roomStatus = "creating"
             state.setRoomStatus("creating")
             this.username = userName
-            state.setUsername(userName)
             try {
                 const response = await this.signallingServerCall("createRoom", 
                     {
@@ -131,7 +133,6 @@ const ConnectionManager = class {
                     notify("error", response.data.error)
                     this.roomStatus = "disconnected"
                     state.setRoomStatus("disconnected")
-                    state.setUsername("")
                     return
                 }
                 this.roomId = response.data.room_id
@@ -153,7 +154,8 @@ const ConnectionManager = class {
         }
     }
 
-    async joinRoom(roomId, userName){
+    async joinRoom(roomId){
+        const userName = useClientStore.getState().username
 
         if(!roomId || roomId === ""){
             notify("error", "Please provide a valid room ID")
@@ -164,7 +166,6 @@ const ConnectionManager = class {
             this.roomStatus = "joining"
             state.setRoomStatus("joining")
             this.username = userName
-            state.setUsername(userName)
             try {
                 const response = await this.signallingServerCall("joinRoom", 
                 {
@@ -176,7 +177,6 @@ const ConnectionManager = class {
                     notify("error", response.data.error)
                     this.roomStatus = "disconnected"
                     state.setRoomStatus("disconnected")
-                    state.setUsername("")
                     return
                 }
 
@@ -227,7 +227,6 @@ const ConnectionManager = class {
                 this.roomId = ""
                 state.setRoomId("")
                 this.userId = ""
-                state.setUsername("")
                 this.roomKey = ""
 
                 // close all peer connections
@@ -317,7 +316,7 @@ const ConnectionManager = class {
         }
 
         try {
-            const url = "ws://173.72.145.131:8000/ws/socket/" + this.userId
+            const url = "ws://173.72.145.131:8000/ws/socket?token=" + encodeURIComponent(AuthService.jwtToken)
             const socket = new WebSocket(url)
             socket.onopen = () => {
                 console.log("WebSocket connection established")
@@ -447,21 +446,22 @@ const ConnectionManager = class {
     }
     
 
+    
     // This function is used to make calls to the signalling server more readable and maintainable.
     signallingServerCall(type, payload){
         switch(type) {
             case "createRoom":
-                return axios.post(signalingServerUrl + "api/create-room", payload)
+                return axios.post(signalingServerUrl + "api/create-room", payload, {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             case "joinRoom":
-                return axios.post(signalingServerUrl + "api/join-room", payload)
+                return axios.post(signalingServerUrl + "api/join-room", payload, {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             case "leaveRoom":
-                return axios.post(signalingServerUrl + "api/leave-room", payload)
+                return axios.post(signalingServerUrl + "api/leave-room", payload, {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             case "sendOffer":
-                return axios.post(signalingServerUrl + "api/offer", payload)
+                return axios.post(signalingServerUrl + "api/offer", payload, {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             case "sendAnswer":
-                return axios.post(signalingServerUrl + "api/answer", payload)
+                return axios.post(signalingServerUrl + "api/answer", payload, {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             case "getRoomUsers":
-                return axios.get(signalingServerUrl + "api/get-room-users/" + this.roomId + "/" + this.userId)
+                return axios.get(signalingServerUrl + "api/get-room-users/" + this.roomId + "/" + this.userId , {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             default:
                 throw new Error("Unknown signalling server call type: " + type)
         }

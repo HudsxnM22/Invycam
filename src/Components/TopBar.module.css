@@ -37,7 +37,7 @@
     background: #75363e;
 }
 
-.gearIcon, .minimizeIcon, .closeIcon {
+.gearIcon, .minimizeIcon, .closeIcon, .logoutIcon {
     width: 15px;
     height: 15px;
     stroke: #aab5c2;

@@ -1,0 +1,151 @@
+/* Matches RoomOptionsForm: dark inputs, teal focus, green primary action. */
+
+.loginPage {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    padding: 4px 0;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 650;
+    color: #e9edf2;
+}
+
+.subtitle {
+    margin: 0;
+    color: #929daa;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.formControl {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.formControl label {
+    color: #9ca8b6;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.formControl input {
+    width: 100%;
+    min-height: 36px;
+    border: 1px solid #333d49;
+    border-radius: 6px;
+    background: #0f1318;
+    color: #edf2f7;
+    padding: 8px 10px;
+    transition: border-color 150ms;
+}
+
+.formControl input:hover {
+    border-color: #52616f;
+}
+
+.formControl input:focus {
+    border-color: #79d8bb;
+}
+
+.formControl input[aria-invalid='true'] {
+    border-color: #7a454e;
+}
+
+.fieldError {
+    color: #efb2b7;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.codeInput {
+    font-size: 18px !important;
+    letter-spacing: 8px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.submitButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    margin-top: 4px;
+    padding: 8px 12px;
+    border: 1px solid #377d65;
+    border-radius: 6px;
+    background: #29624f;
+    color: #e9edf2;
+    font-weight: 550;
+    cursor: pointer;
+    transition: background 150ms;
+}
+
+.submitButton:hover:not(:disabled) {
+    background: #347c63;
+}
+
+.submitButton:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+
+.inlineLink, .link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #79d8bb;
+    font-size: 11px !important;
+    cursor: pointer;
+}
+
+.inlineLink {
+    align-self: flex-end;
+    margin-top: -4px;
+}
+
+.inlineLink:hover, .link:hover {
+    color: #a3e8d3;
+    text-decoration: underline;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 14px;
+    border-top: 1px solid #2b323b;
+    color: #929daa;
+    font-size: 11px;
+}
+
+.dot {
+    color: #52616f;
+}
+
+.loadingSection {
+    min-height: 200px;
+    display: grid;
+    place-items: center;
+}
