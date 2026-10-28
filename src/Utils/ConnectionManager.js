@@ -7,7 +7,7 @@ import useNotification from "../Hooks/useNotification"
 import { AuthService } from "./Auth"
 
 
-const signalingServerUrl = "http://173.72.145.131:8000/"
+const signalingServerUrl = "http://localhost:8000/"
 
 /*
 read the README.md for more information on how to use this class.
@@ -149,6 +149,7 @@ const ConnectionManager = class {
                 this.startWebSocketConnectionMonitoring()
             }
             catch (error) {
+                notify("error", error)
                 console.error("Error calling signalling server: ", error)
             }
         }
@@ -316,7 +317,7 @@ const ConnectionManager = class {
         }
 
         try {
-            const url = "ws://173.72.145.131:8000/ws/socket?token=" + encodeURIComponent(AuthService.jwtToken)
+            const url = "ws://localhost:8000/ws/socket?token=" + encodeURIComponent(AuthService.jwtToken)
             const socket = new WebSocket(url)
             socket.onopen = () => {
                 console.log("WebSocket connection established")
