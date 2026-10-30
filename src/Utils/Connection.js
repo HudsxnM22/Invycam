@@ -38,7 +38,7 @@ const Connection = class {
         })
     }
 
-    async createOffer(localStream, fromUserId, toUserId){
+    async createOffer(localStream, targetParticipantId){
 
         // Negotiate video now, even if there is no captured track to send yet.
         this.videoTransceiver = this.peerConnection.addTransceiver("video", {
@@ -54,8 +54,7 @@ const Connection = class {
         console.log(this.peerId + " " + this.peerConnection.signalingState) 
 
         return {
-            from_user_id: fromUserId,
-            to_user_id: toUserId,
+            to_user_id: targetParticipantId,
             offer: {
                 type: "offer",
                 sdp: this.localSdp.sdp,
@@ -81,7 +80,7 @@ const Connection = class {
 
 
     //localstream == MediaStream
-    async createAnswer(offerData, localStream, fromUserId, targetId){
+    async createAnswer(offerData, localStream, targetParticipantId){
 
         //set remote description
         await this.peerConnection.setRemoteDescription({
@@ -110,8 +109,7 @@ const Connection = class {
         
         // returns Ice Candidates in bulk and the local SDP created for the remote description
         return {
-            from_user_id: fromUserId,
-            to_user_id: targetId,
+            to_user_id: targetParticipantId,
             answer: {
                 type: "answer",
                 sdp:  this.peerConnection.localDescription.sdp,

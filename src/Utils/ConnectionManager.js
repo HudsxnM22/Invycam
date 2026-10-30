@@ -22,7 +22,7 @@ const ConnectionManager = class {
 
     roomId = ""
     roomStatus = "disconnected"
-    userId = ""
+    participantId = ""
     localStream = null
     role = "guest" // or "host", depending on the role in the room is specific to this user.
     peerConnections = {}
@@ -137,7 +137,7 @@ const ConnectionManager = class {
                 }
                 this.roomId = response.data.room_id
                 state.setRoomId(this.roomId)
-                this.userId = response.data.user_id
+                this.participantId = response.data.user_id
                 
                 this.roomKey = response.data.room_key //only host has access to this key
 
@@ -183,7 +183,7 @@ const ConnectionManager = class {
             
                 this.roomId = response.data.room_id
                 state.setRoomId(this.roomId)
-                this.userId = response.data.user_id
+                this.participantId = response.data.user_id
 
                 notify("success", response.data.message)
                 this.roomStatus = "connected"
@@ -210,8 +210,7 @@ const ConnectionManager = class {
             state.setRoomStatus("leaving")
             try {
                 const response = await this.signallingServerCall("leaveRoom", {
-                    room_id: this.roomId,
-                    user_id: this.userId
+                    room_id: this.roomId
                 })
 
                 if(response.data.error){
@@ -226,7 +225,7 @@ const ConnectionManager = class {
                 state.setRoomStatus("disconnected")
                 this.roomId = ""
                 state.setRoomId("")
-                this.userId = ""
+                this.participantId = ""
                 this.roomKey = ""
 
                 // close all peer connections
@@ -278,19 +277,17 @@ const ConnectionManager = class {
             try {
                 for(let user of usersInRoom) {
                     //eventually need to reject requests on the backend if the user is not in the room.
-                    if(user.user_id === this.userId){
+                    if(user.user_id === this.participantId){
                         continue
                     }
 
-                    const targetUserId = user.user_id
+                    const targetParticipantId = user.user_id
 
-                    const connection = new Connection(targetUserId)
-                    this.peerConnections[targetUserId] = connection
+                    const connection = new Connection(targetParticipantId)
+                    this.peerConnections[targetParticipantId] = connection
 
-                    const fromUserId = this.userId
-                    const toUserId = targetUserId
                     
-                    const offerToSend = await connection.createOffer(this.localStream, fromUserId, toUserId)
+                    const offerToSend = await connection.createOffer(this.localStream, targetParticipantId)
                     offerToSend.room_id = this.roomId //add room id for some very basic security
 
                     const response = await this.signallingServerCall("sendOffer", offerToSend)
@@ -339,9 +336,7 @@ const ConnectionManager = class {
                         connection = new Connection(offerData.from_user_id)
                         this.peerConnections[offerData.from_user_id] = connection
 
-                        const answer = await connection.createAnswer(offerData.offer, this.localStream, this.userId, offerData.from_user_id)
-                        console.log(connection)
-                        console.log(answer) //TODO remove this log
+                        const answer = await connection.createAnswer(offerData.offer, this.localStream, offerData.from_user_id)
                         this.signallingServerCall("sendAnswer", answer)
                         connection.username = offerData.username
                         connection.isHost = offerData.isHost
@@ -374,7 +369,6 @@ const ConnectionManager = class {
                         const disconnectData = data.payload
                         useModeStore.getState().removeOnScreenPeer({ peerId: disconnectData.user_id })
                         if(this.peerConnections[disconnectData.user_id]){
-                            console.log(this.peerConnections)
                             this.peerConnections[disconnectData.user_id].closeConnection()
                             delete this.peerConnections[disconnectData.user_id]
                             peerState.updatePeers(this.peerConnections)
@@ -387,7 +381,7 @@ const ConnectionManager = class {
                     case "host_reallocation":
                         const reallocationData = data.payload
                         notify("update", `Host has been changed to ${reallocationData.username}.`)
-                        if(this.userId === reallocationData.new_host_id){
+                        if(this.participantId === reallocationData.new_host_id){
                             this.role = "host"
                         }
                         this.roomKey = reallocationData.room_key //only host has access to this key. for kicking users and other host actions
@@ -412,8 +406,8 @@ const ConnectionManager = class {
 
     //Utils ----========================================================================------------------=====================------------------==========
     
-    getUserId(){
-        return this.userId
+    getParticipantId(){
+        return this.participantId
     }
 
     getRoomId(){
@@ -461,7 +455,7 @@ const ConnectionManager = class {
             case "sendAnswer":
                 return axios.post(signalingServerUrl + "api/answer", payload, {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             case "getRoomUsers":
-                return axios.get(signalingServerUrl + "api/get-room-users/" + this.roomId + "/" + this.userId , {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
+                return axios.get(signalingServerUrl + "api/get-room-users/" + this.roomId , {headers: {Authorization: "Bearer " + AuthService.jwtToken}})
             default:
                 throw new Error("Unknown signalling server call type: " + type)
         }
