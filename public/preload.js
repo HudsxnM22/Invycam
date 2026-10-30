@@ -18,4 +18,17 @@ contextBridge.exposeInMainWorld("ipc", {
     saveSecurityToken: (token) => ipcRenderer.invoke("save-security-token", token),
     getSecurityToken: () => ipcRenderer.invoke("get-security-token"),
     clearSecurityToken: () => ipcRenderer.invoke("clear-security-token"),
+    openExternal: (url) => ipcRenderer.invoke("open-external", url),
+    OauthLoginEvent: (callbackEvent) => {
+        const handler = () => {
+            ipcRenderer.invoke("enable-focus")
+            callbackEvent();
+        }
+        
+        ipcRenderer.on("oauth-login-event", handler);
+
+        return () => {
+            ipcRenderer.removeListener("oauth-login-event", handler)
+        }
+    },
 })

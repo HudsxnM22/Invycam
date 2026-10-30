@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, desktopCapturer, session } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, session, shell } = require('electron');
 const path = require('path');
 const { startListenForKeys, updateKeyBinding } = require('./keyEventListener')
 const util = require("./util");
@@ -118,11 +118,38 @@ ipcMain.handle("clear-security-token", () => {
     return { success: true };
 });
 
-// This method will be called when Electron has finished initialization
-app.whenReady().then(() => {
-  createWindow()
-  startListenForKeys(win)
+ipcMain.handle("open-external", (event, url) => {
+    shell.openExternal(url);
 });
+
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  // For browser opening events for when opened in browser via invycam:// such as oauth
+  app.on('second-instance', (event, commandLine) => {
+    const deepLinkString = commandLine.find(arg => arg.startsWith('invycam://'))
+    if (!deepLinkString) return
+
+    const url = new URL(deepLinkString)
+    if (url.pathname.includes('auth') || url.host === 'auth') {
+      const token = url.searchParams.get('token')
+      util.saveSecurityToken(token)
+      win.webContents.send('oauth-login-event')
+    }
+
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.focus()
+    }
+  })
+
+  app.whenReady().then(() => {
+    createWindow()
+    startListenForKeys(win)
+  })
+}
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
@@ -136,3 +163,11 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('invycam', process.execPath, [path.resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient('invycam')
+}

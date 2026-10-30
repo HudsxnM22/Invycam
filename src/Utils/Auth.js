@@ -1,5 +1,6 @@
 import axios from "axios";
 import useClientStore from "../Hooks/useClientStore";
+import useModeStore from "../Hooks/useModeStore"
 
 const API_URL = "http://localhost:8000/api";
 
@@ -138,6 +139,20 @@ export class AuthService {
         this.resetToken = null;
         await this.setSession(response.data.token, response.data.username);
         return response.data;
+    }
+
+    /**
+     * Starts the Discord OAuth flow: asks the backend for Discord's authorize URL, then opens it
+     * in the user's system browser. The backend's callback handles the rest and fires the
+     * "oauth-login-event" IPC event once a session is ready.
+     * @returns {Promise<void>}
+     */
+    static async loginWithDiscord() {
+        const response = await axios.get(`${API_URL}/auth/discord/login`);
+        //enter operation mode so that the user can interact with their browser to authorize discord. can be fixed with their hotkey.
+        await useModeStore.setState({ mode: "operation" })
+        await window.ipc.enterOperationMode();
+        await window.ipc.openExternal(response.data.url);
     }
 
     /**

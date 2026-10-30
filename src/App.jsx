@@ -6,6 +6,7 @@ import connectionManager from './Utils/ConnectionManager'; //TODO make it so thi
 import Edit from './Pages/Edit';
 import Operation from './Pages/Operation';
 import NotificationProvider from './Utils/NotificationProvider';
+import { AuthService } from './Utils/Auth';
 
 function App() {
   const mode = useModeStore((state) => state.mode)
@@ -116,6 +117,15 @@ function App() {
       document.documentElement.style.setProperty('--edit-background-color', 'transparent');
     }
   }, [mode])
+
+  // App level Oauth event listener to retoggle menu visibility.
+  useEffect(() => {
+      const cleanup = window.ipc.OauthLoginEvent(() => {
+        setMode("menu")
+        AuthService.verifyToken().catch(() => {});
+      });
+      return cleanup;
+  }, []);
 
   //listens for key press to open menu... then updates mode to menu too
   //TODO make so it doesnt constantly rerender

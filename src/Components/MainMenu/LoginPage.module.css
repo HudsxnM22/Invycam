@@ -109,6 +109,27 @@
     opacity: 0.8;
 }
 
+.oauthButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin: 4px auto 0;
+    border: 1px solid #333d49;
+    border-radius: 6px;
+    background: #0f1318;
+    color: #9ca8b6;
+    cursor: pointer;
+    transition: background 150ms, color 150ms, border-color 150ms;
+}
+
+.oauthButton:hover {
+    border-color: #52616f;
+    background: #161b21;
+    color: #edf2f7;
+}
+
 .inlineLink, .link {
     padding: 0;
     border: 0;
