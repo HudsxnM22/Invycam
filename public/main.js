@@ -12,13 +12,14 @@ function createWindow() {
 
   // Create the browser window
   win = new BrowserWindow({
-    ...display.bounds, // x, y, width, height
+    ...display.bounds,
+    icon: path.join(__dirname, "assets", "icon.png"),
     show: false,
     transparent: true,
     frame: false,
     hasShadow: false,
     movable: false,
-    enableLargerThanScreen: true, // macOS otherwise pushes the window below the menu bar
+    enableLargerThanScreen: true,
     minimizable: false,
     alwaysOnTop: true,
     resizable: false,
