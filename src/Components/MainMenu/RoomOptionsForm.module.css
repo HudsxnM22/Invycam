@@ -112,17 +112,81 @@
     gap: 12px;
 }
 
-.connectionManagerContainer .form {
-    gap: 8px;
-    padding: 12px;
+/* room code card: label + big monospace code on the left, copy button on the right */
+.roomCodeCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 12px 12px 14px;
     background: #0f1318;
     border: 1px solid #2b323b;
     border-radius: 6px;
 }
 
-.connectionManagerContainer label {
-    font-size: 12px;
-    color: #c4ced8;
+.roomCodeText {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.roomCodeLabel {
+    color: #929daa;
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.roomCode {
+    color: #edf2f7;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    user-select: all; /* one click selects the whole code */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.copyButtonContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid #35414c;
+    border-radius: 6px;
+    background: #202730;
+    cursor: pointer;
+    transition: background 150ms, border-color 150ms;
+}
+
+.copyButtonContainer:hover {
+    background: #303c48;
+    border-color: #52616f;
+}
+
+.copyButtonContainer[data-copied='true'] {
+    background: #1d3a30;
+    border-color: #377d65;
+}
+
+.copyIcon {
+    width: 16px;
+    height: 16px;
+    stroke: #aab5c2;
+}
+
+.copyButtonContainer:hover .copyIcon {
+    stroke: #e9edf2;
+}
+
+.copyButtonContainer[data-copied='true'] .copyIcon {
+    stroke: #79d8bb;
 }
 
 .leaveButtonHolder {

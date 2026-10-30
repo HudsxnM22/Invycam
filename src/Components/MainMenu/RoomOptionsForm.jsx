@@ -23,6 +23,7 @@ const WelcomeBanner = ({ username }) => (
 
 const RoomOptionsForm = () => {
     const [tab, setTab] = useState("join")
+    const [copied, setCopied] = useState(false)
     const connectionStatus = useClientStore((state) => state.roomStatus)
     const roomId = useClientStore((state) => state.roomId)
     const username = useClientStore((state) => state.username)
@@ -44,6 +45,17 @@ const RoomOptionsForm = () => {
 
     const handleLeave = () => {
         ConnectionManager.leaveRoom()
+    }
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(roomId)
+            setCopied(true)
+            notify("success", "Room ID copied.")
+            setTimeout(() => setCopied(false), 1500)
+        } catch {
+            notify("error", "Couldn't copy the room ID.")
+        }
     }
 
     const onError = (errors) => {
@@ -160,19 +172,32 @@ const RoomOptionsForm = () => {
                 </section>
                 : connectionStatus === "connected" ?
                     <div className={styles.connectionManagerContainer}>
-                        <form className={styles.form}>
-                            <div className={styles.formControl}>
-                                <label>
-                                    <span>R</span><span>o</span><span>o</span><span>m</span><span> </span><span>I</span><span>D</span><span>: {roomId}</span> 
-                                </label>
+                        <div className={styles.roomCodeCard}>
+                            <div className={styles.roomCodeText}>
+                                <span className={styles.roomCodeLabel}>Room ID</span>
+                                <span className={styles.roomCode}>{roomId}</span>
                             </div>
 
-                            <div className={styles.formControl}>
-                                <label>
-                                    <span>U</span><span>s</span><span>e</span><span>r</span><span>n</span><span>a</span><span>m</span><span>e</span><span>: {username}</span>
-                                </label>
-                            </div>
-                        </form>
+                            <button
+                                className={styles.copyButtonContainer}
+                                type="button"
+                                onClick={handleCopy}
+                                title={copied ? "Copied" : "Copy room ID"}
+                                aria-label="Copy room ID"
+                                data-copied={copied}
+                            >
+                                {copied ?
+                                    <svg className={styles.copyIcon} viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17l-5-5" />
+                                    </svg>
+                                :
+                                    <svg className={styles.copyIcon} viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                    </svg>
+                                }
+                            </button>
+                        </div>
 
                         <section className={styles.leaveButtonHolder}>
                             <button className={styles.leaveButton} type="button" onClick={handleLeave}>Leave Room</button>
