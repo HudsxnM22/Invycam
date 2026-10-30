@@ -44,6 +44,9 @@ const ConnectionManager = class {
                 
                 audio: false
             })
+            //needs to listen for screen change event and kill all local streams.
+            //This is for monitor select. {user on screen 1 has recording cropped} -> monitor changed -> 
+            //calls event that clears this stream and. restablishes local stream as clear on new monitor
 
             //if canvas already exists, dont create a new one.
             if(!this.canvasStreamElement){
@@ -73,16 +76,31 @@ const ConnectionManager = class {
             const ctx = this.canvasStreamElement.canvas.getContext('2d')
             const { startX, startY, width, height } = screenCoordinatesToDraw
 
-            this.canvasStreamElement.canvas.width = width
-            this.canvasStreamElement.canvas.height = height
             this.canvasStreamElement.canvas.style.display = 'none'
-            
+
             await this.canvasStreamElement.video.play()
-            
+
+            // the selection is in CSS pixels relative to the window, but the video is in the screen's real pixels
+            // (2x on retina) and covers the whole display. convert: add the window's offset on the screen, then scale.
+            const video = this.canvasStreamElement.video
+            const scaleX = video.videoWidth / window.screen.width
+            const scaleY = video.videoHeight / window.screen.height
+            const offsetX = window.screenX - (window.screen.left ?? 0)
+            const offsetY = window.screenY - (window.screen.top ?? 0)
+
+            const sourceX = (startX + offsetX) * scaleX
+            const sourceY = (startY + offsetY) * scaleY
+            const sourceWidth = width * scaleX
+            const sourceHeight = height * scaleY
+
+            // output at the source resolution so retina captures stay sharp
+            this.canvasStreamElement.canvas.width = Math.round(sourceWidth)
+            this.canvasStreamElement.canvas.height = Math.round(sourceHeight)
+
             // recursively draw video frames onto the canvas
             const updateCanvas = async () => {
                 try{
-                    ctx.drawImage(this.canvasStreamElement.video, startX, startY, width, height, 0, 0, width, height)
+                    ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight)
                 }catch(e){}
                 this.canvasStreamElement.rafID = requestAnimationFrame(updateCanvas)
             }

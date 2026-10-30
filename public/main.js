@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, desktopCapturer, session, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, session, shell, screen } = require('electron');
 const path = require('path');
 const { startListenForKeys, updateKeyBinding } = require('./keyEventListener')
 const util = require("./util");
@@ -6,12 +6,19 @@ const util = require("./util");
 let win;
 
 function createWindow() {
+  // frameless transparent window sized to cover the whole display instead of real fullscreen.
+  // bounds (not workArea) so it covers the taskbar/dock/menu bar too
+  const display = screen.getPrimaryDisplay();
+
   // Create the browser window
   win = new BrowserWindow({
+    ...display.bounds, // x, y, width, height
     show: false,
     transparent: true,
     frame: false,
-    fullscreen: true,
+    hasShadow: false,
+    movable: false,
+    enableLargerThanScreen: true, // macOS otherwise pushes the window below the menu bar
     minimizable: false,
     alwaysOnTop: true,
     resizable: false,
@@ -38,14 +45,32 @@ function createWindow() {
     win.setAlwaysOnTop(true, 'screen-saver')
     win.moveTop()
     win.focus()
+    if (process.platform === "darwin") {
+      // pre-Lion "simple" fullscreen: covers the whole display including the menu bar,
+      // without moving to its own Space or animating. keeps window coords == screen coords.
+      win.setSimpleFullScreen(true)
+      win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    }
     win.webContents.focus()
   })
 
   //for screen recording
+  let selectedSourceId = 0;
+
+  ipcMain.handle("get-screens", async () => {
+      const sources = await desktopCapturer.getSources({ types: ["screen"], thumbnailSize: { width: 320, height: 180 } });
+      return sources.map((s) => ({ id: s.id, name: s.name, thumbnail: s.thumbnail.toDataURL() }));
+  });
+
+  ipcMain.handle("select-screen", (event, sourceId) => {
+      selectedSourceId = sourceId;
+  });
+
   session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
-    desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
-      callback({ video: sources[0], audio: 'loopback' })
-    })
+      desktopCapturer.getSources({ types: ["screen"] }).then((sources) => {
+          const chosen = sources.find((s) => s.id === selectedSourceId) ?? sources[0];  // fall back to the first screen
+          callback({ video: chosen, audio: "loopback" });
+      });
   }, { useSystemPicker: false });
 
   //win.setIgnoreMouseEvents(true); //TEST
@@ -122,27 +147,37 @@ ipcMain.handle("open-external", (event, url) => {
     shell.openExternal(url);
 });
 
+// handles invycam:// links (oauth login). shared by windows/linux (second-instance) and macOS (open-url)
+function handleDeepLink(deepLinkString) {
+  const url = new URL(deepLinkString)
+  if (url.pathname.includes('auth') || url.host === 'auth') {
+    const token = url.searchParams.get('token')
+    util.saveSecurityToken(token)
+    if (win && !win.isDestroyed()) win.webContents.send('oauth-login-event')
+  }
+
+  if (win && !win.isDestroyed()) {
+    if (win.isMinimized()) win.restore()
+    win.focus()
+  }
+}
+
+// macOS delivers deep links to the running app through open-url instead of launching a second instance.
+app.on('open-url', (event, deepLinkString) => {
+  event.preventDefault()
+  handleDeepLink(deepLinkString)
+})
+
 const gotTheLock = app.requestSingleInstanceLock()
 
 if (!gotTheLock) {
   app.quit()
 } else {
-  // For browser opening events for when opened in browser via invycam:// such as oauth
+  // For browser opening events for when opened in browser via invycam:// such as oauth (windows/linux)
   app.on('second-instance', (event, commandLine) => {
     const deepLinkString = commandLine.find(arg => arg.startsWith('invycam://'))
     if (!deepLinkString) return
-
-    const url = new URL(deepLinkString)
-    if (url.pathname.includes('auth') || url.host === 'auth') {
-      const token = url.searchParams.get('token')
-      util.saveSecurityToken(token)
-      win.webContents.send('oauth-login-event')
-    }
-
-    if (win) {
-      if (win.isMinimized()) win.restore()
-      win.focus()
-    }
+    handleDeepLink(deepLinkString)
   })
 
   app.whenReady().then(() => {

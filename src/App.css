@@ -31,6 +31,13 @@ body {
   overflow: hidden;
 }
 
+/* the overlay should never scroll. without this, dragging a capture area near the edge
+   auto scrolls the page and the whole UI creeps up a bit more every time */
+html {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .areaToRecord {
   width: inherit;
   height: inherit;

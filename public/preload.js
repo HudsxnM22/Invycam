@@ -31,4 +31,7 @@ contextBridge.exposeInMainWorld("ipc", {
             ipcRenderer.removeListener("oauth-login-event", handler)
         }
     },
+    // preload.js: add to your existing window.ipc object
+    getScreens: () => ipcRenderer.invoke("get-screens"),
+    selectScreen: (sourceId) => ipcRenderer.invoke("select-screen", sourceId),
 })

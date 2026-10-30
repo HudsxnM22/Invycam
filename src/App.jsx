@@ -25,6 +25,7 @@ function App() {
     let startX, startY;
 
     const handleMouseDown = (event) => {
+      event.preventDefault(); // stops the drag from starting a text selection, which auto scrolls the page
       mouseDown = true;
       setAreaSelected(false)
       startX = event.clientX;
