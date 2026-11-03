@@ -11,6 +11,7 @@ import connectionManager from "../Utils/ConnectionManager"
 import PeersScrollableMenu from "../Components/MainMenu/PeersScrollableMenu"
 import KeyBindSetting from "../Components/Settings/KeyBindSetting"
 import LoginPage from "../Components/MainMenu/LoginPage"
+import MonitorSelect from "../Components/Settings/MonitorSelect"
 
 //the menu that contains all the general information and room management
 const MainMenu = () => {
@@ -56,6 +57,7 @@ const MainMenu = () => {
                                     <h1>Settings</h1>
                                     <div className={styles.settingsContent}>
                                         <KeyBindSetting></KeyBindSetting>
+                                        <MonitorSelect></MonitorSelect>
                                     </div>
                                 </section>
                             :

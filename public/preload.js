@@ -33,5 +33,6 @@ contextBridge.exposeInMainWorld("ipc", {
     },
     // preload.js: add to your existing window.ipc object
     getScreens: () => ipcRenderer.invoke("get-screens"),
+    getCurrentScreen: () => ipcRenderer.invoke("get-current-screen"),
     selectScreen: (sourceId) => ipcRenderer.invoke("select-screen", sourceId),
 })

@@ -6,8 +6,6 @@ const util = require("./util");
 let win;
 
 function createWindow() {
-  // frameless transparent window sized to cover the whole display instead of real fullscreen.
-  // bounds (not workArea) so it covers the taskbar/dock/menu bar too
   const display = screen.getPrimaryDisplay();
 
   // Create the browser window
@@ -56,20 +54,44 @@ function createWindow() {
   })
 
   //for screen recording
-  let selectedSourceId = 0;
+  // desktopCapturer source id, e.g. "screen:2:0". null until resolved to the primary display
+  let selectedSourceId = null;
+  let selectedDisplay = display;
+
+  const findPrimarySource = (sources) => {
+      // display_id is a string, Display.id is a number
+      const primaryId = String(screen.getPrimaryDisplay().id);
+      return sources.find((s) => s.display_id === primaryId) ?? sources[0];
+  };
 
   ipcMain.handle("get-screens", async () => {
       const sources = await desktopCapturer.getSources({ types: ["screen"], thumbnailSize: { width: 320, height: 180 } });
       return sources.map((s) => ({ id: s.id, name: s.name, thumbnail: s.thumbnail.toDataURL() }));
   });
 
-  ipcMain.handle("select-screen", (event, sourceId) => {
+  // sets the capture source and moves the overlay window onto that source's display
+  ipcMain.handle("select-screen", async (event, sourceId) => {
+      const sources = await desktopCapturer.getSources({ types: ["screen"], thumbnailSize: { width: 0, height: 0 } });
+      const source = sources.find((s) => s.id === sourceId);
+      if (!source) return;
+
       selectedSourceId = sourceId;
+      selectedDisplay = screen.getAllDisplays().find((d) => String(d.id) === source.display_id)
+          ?? screen.getPrimaryDisplay();
+      win.setBounds(selectedDisplay.bounds);
   });
+
+  ipcMain.handle("get-current-screen", async () => {
+      if (selectedSourceId === null) {
+          const sources = await desktopCapturer.getSources({ types: ["screen"], thumbnailSize: { width: 0, height: 0 } });
+          selectedSourceId = findPrimarySource(sources)?.id ?? null;
+      }
+      return selectedSourceId;
+  })
 
   session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
       desktopCapturer.getSources({ types: ["screen"] }).then((sources) => {
-          const chosen = sources.find((s) => s.id === selectedSourceId) ?? sources[0];  // fall back to the first screen
+          const chosen = sources.find((s) => s.id === selectedSourceId) ?? findPrimarySource(sources);
           callback({ video: chosen, audio: "loopback" });
       });
   }, { useSystemPicker: false });

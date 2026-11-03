@@ -7,7 +7,7 @@ import useNotification from "../Hooks/useNotification"
 import { AuthService } from "./Auth"
 
 
-const signalingServerUrl = "http://localhost:8000/"
+const signalingServerUrl = "https://invycam.space/"
 
 /*
 read the README.md for more information on how to use this class.
@@ -34,6 +34,32 @@ const ConnectionManager = class {
     constructor(){
     }
 
+    // Returns an array of all the display monitors and associated ID's
+    async getAllMonitors() {
+        return await window.ipc.getScreens()
+    }
+
+    async changeMainMonitor(monitorId) {
+        // set state properties and all connected peers local stream as null to indicate this user changed monitors and needs to re select record area.
+        // To do so they simple recall setLocalStream() with the new monitor selection and the new coordinates to draw.
+        this.localStream = null
+        this.canvasStreamElement = null
+        for (const connection of Object.values(this.peerConnections)) {
+            await connection.setLocalVideoTrack(null)
+        }
+        state.setStartedStream(false)
+        state.setLocalStream(null)
+        state.setCurrentScreen(monitorId)
+
+        // set the new monitor as the main monitor via context bridge call to electron main process. This will change the monitor that is being captured by the getDisplayMedia() call.
+        await window.ipc.selectScreen(monitorId)
+    }
+
+    // Returns the ID of the currently selected monitor
+    async getCurrentMonitor() {
+        return await window.ipc.getCurrentScreen()
+    }
+
     async setLocalStream(screenCoordinatesToDraw){
         try {
             // Capture screen
@@ -44,9 +70,6 @@ const ConnectionManager = class {
                 
                 audio: false
             })
-            //needs to listen for screen change event and kill all local streams.
-            //This is for monitor select. {user on screen 1 has recording cropped} -> monitor changed -> 
-            //calls event that clears this stream and. restablishes local stream as clear on new monitor
 
             //if canvas already exists, dont create a new one.
             if(!this.canvasStreamElement){
@@ -332,7 +355,7 @@ const ConnectionManager = class {
         }
 
         try {
-            const url = "ws://localhost:8000/ws/socket?token=" + encodeURIComponent(AuthService.jwtToken)
+            const url = "wss://invycam.space/ws/socket?token=" + encodeURIComponent(AuthService.jwtToken)
             const socket = new WebSocket(url)
             socket.onopen = () => {
                 console.log("WebSocket connection established")

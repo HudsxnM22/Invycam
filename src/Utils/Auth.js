@@ -2,7 +2,7 @@ import axios from "axios";
 import useClientStore from "../Hooks/useClientStore";
 import useModeStore from "../Hooks/useModeStore"
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = "https://invycam.space/api";
 
 /**
  * Client for the backend auth endpoints. All members are static, so use it as `AuthService.login(...)`

@@ -8,6 +8,7 @@ const useClientStore = create((set) => ({
     startedStream: false,
     localStream: null,
     loggedIn: false,
+    currentScreen: null, // desktopCapturer source id, e.g. "screen:2:0"
 
     setRoomStatus: (roomStatus) => set({ roomStatus }),
     setRole: (role) => set({ role }),
@@ -16,6 +17,7 @@ const useClientStore = create((set) => ({
     setStartedStream: (bool) => set({startedStream: bool}),
     setLocalStream: (MediaStream) => set({localStream: MediaStream}),
     setLoggedIn: (bool) => set({loggedIn: bool}),
+    setCurrentScreen: (screenId) => set({currentScreen: screenId}),
 }))
 
 export default useClientStore
